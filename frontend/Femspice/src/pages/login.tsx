@@ -1,6 +1,6 @@
 function Login() {
     return (
-        <h1>Hi from login</h1>
+        <h1>Hi from nigga</h1>
     )
 }
 
