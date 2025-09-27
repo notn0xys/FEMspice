@@ -1,8 +1,123 @@
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Button } from "../components/ui/button";
+
 function Login() {
-    return (
-        <h1>Hi from nigga</h1>
-    )
+  return (
+        <div className="flex w-full items-center justify-center ">
+        <Card className="w-full min-w-[300px] max-w-2xl">
+        <CardHeader>
+            <CardTitle className="text-xl font-bold">Login</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <form className="flex flex-col gap-6">
+            <div className="grid gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input 
+                id="user"
+                type="text"
+                placeholder="Aki is gay"
+                required
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <div className="flex items-center">
+              <Label htmlFor="password">Password</Label>
+              <a
+                  href="https://www.youtube.com/watch?v=npyiiInMA0w&list=RDlbvpP-CEwhk&index=3" //replace with forgot password link
+                  className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                >
+                  Forgot your password?
+                </a>
+              </div>
+              <Input 
+                id="password"
+                type="password"
+                required
+              />
+            </div>
+            </form>
+        </CardContent>
+        <CardFooter>
+            <div className="flex w-full flex-col gap-4">
+              <Button type="submit" className="w-full">Login</Button>
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-sm text-gray-400">
+                  Don't have an account? 
+                </p>
+                <a
+                  href="https://www.youtube.com/watch?v=npyiiInMA0w&list=RDlbvpP-CEwhk&index=3" //replace with forgot password link
+                  className="text-sm text-blue-600 underline hover:text-blue-1000"
+                >
+                  <u>Signup</u>
+                </a>
+              </div>
+            </div>
+            
+        </CardFooter>
+        </Card>
+        </div>
+  );
 }
-
-
 export default Login;
+
+// export function CardDemo() {
+//   return (
+//     <Card className="w-full max-w-sm">
+//       <CardHeader>
+//         <CardTitle>Login to your account</CardTitle>
+//         <CardDescription>
+//           Enter your email below to login to your account
+//         </CardDescription>
+//         <CardAction>
+//           <Button variant="link">Sign Up</Button>
+//         </CardAction>
+//       </CardHeader>
+//       <CardContent>
+//         <form>
+//           <div className="flex flex-col gap-6">
+//             <div className="grid gap-2">
+//               <Label htmlFor="email">Email</Label>
+//               <Input
+//                 id="email"
+//                 type="email"
+//                 placeholder="m@example.com"
+//                 required
+//               />
+//             </div>
+//             <div className="grid gap-2">
+//               <div className="flex items-center">
+//                 <Label htmlFor="password">Password</Label>
+//                 <a
+//                   href="#"
+//                   className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+//                 >
+//                   Forgot your password?
+//                 </a>
+//               </div>
+//               <Input id="password" type="password" required />
+//             </div>
+//           </div>
+//         </form>
+//       </CardContent>
+//       <CardFooter className="flex-col gap-2">
+//         <Button type="submit" className="w-full">
+//           Login
+//         </Button>
+//         <Button variant="outline" className="w-full">
+//           Login with Google
+//         </Button>
+//       </CardFooter>
+//     </Card>
+//   )
+// }
