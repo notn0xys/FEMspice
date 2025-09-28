@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from fastapi.security import OAuth2PasswordBearer
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from config.db import users_collection, simulations_collection, client
+from typing import Annotated
+from routers import auth
 
 # Send a ping to confirm a successful connection
 try:
@@ -10,10 +13,14 @@ try:
 except Exception as e:
     print(e)
 
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
+app.include_router(auth.router)
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
-
+# @app.get("/items/")
+# async def read_items(token: Annotated[str, Depends(oauth2_scheme)]):
+#     return {"token": token}

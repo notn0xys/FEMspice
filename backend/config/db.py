@@ -1,7 +1,12 @@
 
 from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
 
-client = MongoClient("mongodb+srv://admin:Bbx931fxrBFGhhI8@cluster0.ud2bknp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+load_dotenv()
+MONGO_URI = os.getenv("MONGO_URI")
+
+client = MongoClient(MONGO_URI)
 
 db = client.FEMspice
 users_collection = db["users"]
