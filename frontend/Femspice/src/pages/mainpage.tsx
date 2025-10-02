@@ -14,27 +14,38 @@ import  {ReactFlow ,
   type Connection,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-// Initial nodes for demonstration
+import ResistorNode from "@/electric_components/ResistorNode";
+import VoltageSourceNode from "@/electric_components/VoltageSourceNode";
+const nodeTypes = {
+    resistor: ResistorNode,
+    voltageSource: VoltageSourceNode
+};
 const initialNodes: Node[] = [
   {
-    id: '1',
+    id: 'R1',
     type: 'default',
     position: { x: 100, y: 100 },
     data: { label: 'Node 1' },
   },
   {
-    id: '2',
+    id: 'R2',
     type: 'default',
     position: { x: 300, y: 100 },
     data: { label: 'Node 2' },
   },
+  {
+    id: 'R3',
+    type: 'resistor',
+    position: { x: 200, y: 300 },
+    data: { resistance: 1000 }
+  }
 ];
 
 const initialEdges: Edge[] = [
   {
     id: 'e1-2',
-    source: '1',
-    target: '2',
+    source: 'R1',
+    target: 'R2',
   },
 ];
 
@@ -57,7 +68,8 @@ export default function App() {
         width: '100%', 
         height: '100%'
       }}>
-                <Button onClick={() => console.log(nodes)}>Click Me</Button>
+        <Button onClick={() => console.log(nodes)}>check nodes</Button>
+        <Button onClick={() => console.log(edges)}>check edges</Button>
 
         <ReactFlow
           nodes={nodes}
@@ -65,6 +77,7 @@ export default function App() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          nodeTypes={nodeTypes}
           fitView
         >
           <Background />
