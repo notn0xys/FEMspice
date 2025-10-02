@@ -25,7 +25,6 @@ function App() {
         <Route path='/about' element = {<About/>}/>
         <Route path='/main' element = {<MainPage/>}/>
       </Routes>
-
     </div>
   )
 }
