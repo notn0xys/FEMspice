@@ -252,7 +252,7 @@ button:focus-visible {
     @apply bg-background text-foreground;
 
     letter-spacing: var(--tracking-normal);
-    @apply bg-gray-200;
+
 
   }
 }
