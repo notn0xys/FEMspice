@@ -10,114 +10,100 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
+import { Lock } from "lucide-react"
+import { User } from "lucide-react"
+import { Link } from 'react-router-dom'
+
 
 function Login() {
   return (
-        <div className="flex w-full items-center justify-center ">
-        <Card className="w-full min-w-[300px] max-w-2xl">
+      <div className="w-full min-w-5xl h-[500px] flex overflow-hidden ">
+        <div className="w-7/10 min-w-1xl h-[500px] relative overflow-hidden rounded-l-xl rounded-r-none">
+            <img
+              src="/slideshow1.png"
+              alt="Slideshow"
+              className="object-cover w-full h-full blur-[4px]"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h2 className="text-black text-3xl font-bold drop-shadow-lg text-center px-4">
+                Start your project with FEMspice
+              </h2>
+            </div>
+          </div>
+        <Card className="w-3/10 min-w-1xl h-[500px] flex overflow-hidden rounded-r-xl rounded-l-none">
+          
+        
         <CardHeader>
-            <CardTitle className="text-xl font-bold">Login</CardTitle>
+            <CardTitle className="flex justify-center">
+              <img
+                src="/FEMSpicelogo.png"       // your image path
+                alt="FEMspice Logo"
+                className="w-32 h-auto" // adjust width/height as needed
+              />
+            </CardTitle>
+            
+
         </CardHeader>
         <CardContent>
-            <form className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
-              <Input 
-                id="user"
-                type="text"
-                placeholder="Aki is gay"
-                required
-              />
-            </div>
+            <h2 className="text-xl font-bold">Welcome Back!</h2>
+            <p className="text-sm text-gray-400">Login to your account</p>
+            <form className="flex flex-col gap-4">
 
+            <div className="grid gap-2 mt-6">
+              <div className="relative w-full">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input 
+                  id="user"
+                  type="text"
+                  placeholder="username"
+                  required
+                  className="w-full pl-10 pr-3 py-2 "
+                />
+              </div>
+              <div className="relative w-full">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input 
+                  id="password"
+                  type="password"
+                  placeholder="password"
+                  required
+                  className="w-full pl-10 pr-3 py-2 "
+                />
+              </div>
+            </div>
             <div className="grid gap-2">
               <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
+              <p className="text-xs text-gray-400">Remember me?</p>
               <a
                   href="https://www.youtube.com/watch?v=npyiiInMA0w&list=RDlbvpP-CEwhk&index=3" //replace with forgot password link
-                  className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                  className="ml-auto inline-block text-xs underline-offset-4 hover:underline"
                 >
                   Forgot your password?
                 </a>
               </div>
-              <Input 
-                id="password"
-                type="password"
-                required
-              />
+              
             </div>
             </form>
         </CardContent>
         <CardFooter>
-            <div className="flex w-full flex-col gap-4">
+            <div className="flex w-full flex-col gap-2">
               <Button type="submit" className="w-full">Login</Button>
               <div className="flex items-center justify-center gap-2">
-                <p className="text-sm text-gray-400">
+                <p className="text-xs text-gray-400">
                   Don't have an account? 
                 </p>
-                <a
-                  href="https://www.youtube.com/watch?v=npyiiInMA0w&list=RDlbvpP-CEwhk&index=3" //replace with forgot password link
-                  className="text-sm text-blue-600 underline hover:text-blue-1000"
+                <Link
+                  to="/about"
+                  className="text-xs text-blue-600 underline hover:text-blue-1000"
                 >
                   <u>Signup</u>
-                </a>
+                </Link>
               </div>
             </div>
             
         </CardFooter>
         </Card>
-        </div>
+      </div>
   );
 }
 export default Login;
-
-// export function CardDemo() {
-//   return (
-//     <Card className="w-full max-w-sm">
-//       <CardHeader>
-//         <CardTitle>Login to your account</CardTitle>
-//         <CardDescription>
-//           Enter your email below to login to your account
-//         </CardDescription>
-//         <CardAction>
-//           <Button variant="link">Sign Up</Button>
-//         </CardAction>
-//       </CardHeader>
-//       <CardContent>
-//         <form>
-//           <div className="flex flex-col gap-6">
-//             <div className="grid gap-2">
-//               <Label htmlFor="email">Email</Label>
-//               <Input
-//                 id="email"
-//                 type="email"
-//                 placeholder="m@example.com"
-//                 required
-//               />
-//             </div>
-//             <div className="grid gap-2">
-//               <div className="flex items-center">
-//                 <Label htmlFor="password">Password</Label>
-//                 <a
-//                   href="#"
-//                   className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-//                 >
-//                   Forgot your password?
-//                 </a>
-//               </div>
-//               <Input id="password" type="password" required />
-//             </div>
-//           </div>
-//         </form>
-//       </CardContent>
-//       <CardFooter className="flex-col gap-2">
-//         <Button type="submit" className="w-full">
-//           Login
-//         </Button>
-//         <Button variant="outline" className="w-full">
-//           Login with Google
-//         </Button>
-//       </CardFooter>
-//     </Card>
-//   )
-// }
