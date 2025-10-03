@@ -1,6 +1,7 @@
 import Layout from "@/components/layout"
-import { useState, useRef} from "react";
+import { useState, useRef, useEffect} from "react";
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input";
 import  {ReactFlow ,
   MiniMap,
   Background,
@@ -15,6 +16,7 @@ import  {ReactFlow ,
   type NodeChange,
   type EdgeChange,
   type Connection,
+  Panel,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import ResistorNode from "@/electric_components/ResistorNode";
@@ -23,42 +25,21 @@ const nodeTypes = {
     resistor: ResistorNode,
     voltageSource: VoltageSourceNode
 };
-const initialNodes: Node[] = [
-  {
-    id: 'R1',
-    type: 'default',
-    position: { x: 100, y: 100 },
-    data: { label: 'Node 1' },
-  },
-  {
-    id: 'R2',
-    type: 'default',
-    position: { x: 300, y: 100 },
-    data: { label: 'Node 2' },
-  },
-  {
-    id: 'R3',
-    type: 'resistor',
-    position: { x: 200, y: 300 },
-    data: { resistance: 1000 }
-  }
-];
-
-const initialEdges: Edge[] = [
-  {
-    id: 'e1-2',
-    source: 'R1',
-    target: 'R2',
-    type: 'smoothstep'
-  },
-];
 
 export default function App() {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+  const [nodeName, setNodeName] = useState<string>("");
+  const [nodeValue, setNodeValue] = useState<number>(0);
+  const [nodeID, setNodeID] = useState<string>("");
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  
+  useEffect(() => {
+    if (nodeID === "") return;
+    const node = nodes.find((n) => n.id === nodeID);
+    setNodeName(node.data.label || "");
+    setNodeValue(node.data.value || 0);
+  }, [nodeID]);  
   const onNodesChange = (changes: NodeChange[]) =>
     setNodes((nds) => applyNodeChanges(changes, nds));
   
@@ -67,7 +48,24 @@ export default function App() {
   
   const onConnect = (connection: Connection) =>
     setEdges((eds) => addEdge({ ...connection, type: 'smoothstep' }, eds));
-
+  function onChangeNodeName() {
+    if (nodeID === "") return;
+    setNodes((nds) => nds.map((node) => {
+      if (node.id === nodeID) {
+        return {...node, data: {...node.data, label: nodeName}}
+      }
+      return node;
+    }))
+  }
+  function onChangeNodeValue() {
+    if (nodeID === "") return;
+    setNodes((nds) => nds.map((node) => {
+      if (node.id === nodeID) {
+        return {...node, data: {...node.data, value: nodeValue}}
+      } 
+      return node;
+    }))
+  }
   return (
     
     <Layout>
@@ -78,10 +76,6 @@ export default function App() {
       ref={reactFlowWrapper}
 
       >
-
-        <Button onClick={() => console.log(nodes)}>check nodes</Button>
-        <Button onClick={() => console.log(edges)}>check edges</Button>
-
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -119,7 +113,7 @@ export default function App() {
             });
             const types_id = getAmountOfSameTypes(nodes, type) + 1;
             const newNode = {
-              id: `${type.charAt(0).toUpperCase() + type.slice(1)}${types_id}`,
+              id: `${type.charAt(0).toUpperCase()}${types_id}`,
               type,
               position,
               data: { label: `${type} ${types_id}` , value: value   },
@@ -127,7 +121,22 @@ export default function App() {
             setNodes((nds) => nds.concat(newNode));
           
           }}
+          onNodeClick={(_, node) => {
+            setNodeID(node?.id || "");
+          }
+        }
         >
+          <Panel position="top-right" style={{display: "flex", flexDirection: "column", gap: "10px"}}>
+            <Button onClick={() => {
+              runSimulation(nodes, edges);
+            }}>Run Simulation</Button>
+            <Button onClick={() => console.log(nodes)}>check nodes</Button>
+            <Button onClick={() => console.log(edges)}>check edges</Button>
+          </Panel>
+          <Panel position="top-left" style={{display: "flex", flexDirection: "column", gap: "10px", width: "150px"}}>
+            <Input placeholder="Node Name" value={nodeName} onChange={(e) => setNodeName(e.target.value)} onBlur={onChangeNodeName} />
+            <Input placeholder="Node Value" type="number" value={nodeValue} onChange={(e) => setNodeValue(Number(e.target.value))} onBlur={onChangeNodeValue} />
+          </Panel>
           <Background />
           <Controls />
           <MiniMap nodeStrokeWidth={3} zoomable pannable />
@@ -139,4 +148,8 @@ export default function App() {
 
 function getAmountOfSameTypes(nodes: Node[], type: string) {
   return nodes.filter((node) => node.type === type).length;
+}
+
+function runSimulation(nodes: Node[], edges: Edge[]) {
+  // call backend Pyspice
 }

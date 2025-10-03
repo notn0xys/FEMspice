@@ -214,11 +214,9 @@
     @apply bg-background text-foreground;
 
     letter-spacing: var(--tracking-normal);
-    @apply transition-colors duration-300;
 
   }
   html {
-    @apply trasnition-colors duration-300;
 
   }
 }
