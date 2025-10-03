@@ -37,8 +37,10 @@ export default function App() {
   useEffect(() => {
     if (nodeID === "") return;
     const node = nodes.find((n) => n.id === nodeID);
-    setNodeName(node.data.label || "");
-    setNodeValue(node.data.value || 0);
+    const meow_label = typeof node?.data.label === "string" ? node.data.label : "";
+    const meow_value = typeof node?.data.value === "number" ? node.data.value : 0;
+    setNodeName(meow_label);
+    setNodeValue(meow_value);
   }, [nodeID]);  
   const onNodesChange = (changes: NodeChange[]) =>
     setNodes((nds) => applyNodeChanges(changes, nds));
