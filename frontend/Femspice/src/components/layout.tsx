@@ -53,7 +53,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <NavigationMenu viewport={false} className="z-50">
                     <NavigationMenuList className="gap-4">
                       <NavigationMenuItem>
-
                         <NavigationMenuTrigger className=" hover:bg-gray-700">Home</NavigationMenuTrigger>
                         <NavigationMenuContent className="w-[400px] text-black z-50">
                           <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
