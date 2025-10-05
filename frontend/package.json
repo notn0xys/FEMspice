@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@tailwindcss/vite": "^4.1.13",
+    "framer-motion": "^12.23.22",
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
