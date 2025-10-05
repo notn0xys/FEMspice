@@ -4,6 +4,8 @@ import { Routes, Route, Link } from 'react-router-dom'
 import Login  from './pages/login'
 import About from './pages/about'
 import MainPage from './pages/mainpage'
+import Signup from './pages/signup'
+// import Signup from './pages/singup'
 import { useEffect } from 'react';
 import Signup from './pages/signup'
 

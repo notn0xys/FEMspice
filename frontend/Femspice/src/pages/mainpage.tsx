@@ -1,5 +1,7 @@
 import Layout from "@/components/layout"
+
 import { useState, useRef, useEffect} from "react";
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input";
 import  {ReactFlow ,
@@ -78,6 +80,11 @@ export default function App() {
       ref={reactFlowWrapper}
 
       >
+
+        <Button onClick={() => console.log(nodes)}>check nodes</Button>
+        <Button onClick={() => console.log(edges)}>check edges</Button>
+
+      
         <ReactFlow
           nodes={nodes}
           edges={edges}
