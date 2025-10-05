@@ -218,7 +218,7 @@
 
   }
   html {
-    @apply trasnition-colors duration-300;
+    @apply transition-colors duration-300;
 
   }
 }
