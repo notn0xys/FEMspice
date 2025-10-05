@@ -5,6 +5,7 @@ import Login  from './pages/login'
 import About from './pages/about'
 import MainPage from './pages/mainpage'
 import { useEffect } from 'react';
+import Signup from './pages/signup'
 
 function App() {
   useEffect(() => {
@@ -22,8 +23,11 @@ function App() {
     <div>
       <Routes>
         <Route path='/' element = {<Login/>}  / >
+        <Route path='/login' element = {<Login/>}  / >
         <Route path='/about' element = {<About/>}/>
-        <Route path='/main' element = {<MainPage/>}/>
+        <Route path='/home' element = {<MainPage/>}/>
+        <Route path='/signup' element = {<Signup/>}/>
+
       </Routes>
     </div>
   )
