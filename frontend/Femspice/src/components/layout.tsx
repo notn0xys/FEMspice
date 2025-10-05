@@ -46,14 +46,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
             <div className="flex items-center gap-2 p-2 border-b">
-                <SidebarTrigger className="bg-gray-800 hover:bg-gray-700">
-                  <SquareMenu className="h-4 w-4 text-white" /> 
+                <SidebarTrigger >
+                  {isDark ? <SquareMenu className="h-4 w-4" /> : <SquareMenu className="h-4 w-4" color="black" />}
                 </SidebarTrigger>
-                <div className="flex-1 justify-center flex flex-row text-white gap-20" >
+                <div className="flex-1 justify-center flex flex-row gap-20" >
                   <NavigationMenu viewport={false} className="z-50">
                     <NavigationMenuList className="gap-4">
                       <NavigationMenuItem>
-                        <NavigationMenuTrigger className="text-white hover:bg-gray-700">Home</NavigationMenuTrigger>
+
+                        <NavigationMenuTrigger className=" hover:bg-gray-700">Home</NavigationMenuTrigger>
                         <NavigationMenuContent className="w-[400px] text-black z-50">
                           <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                             <li>
@@ -73,7 +74,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         </NavigationMenuContent>
                       </NavigationMenuItem>
                       <NavigationMenuItem>
-                        <NavigationMenuTrigger className="text-white hover:bg-gray-700">About</NavigationMenuTrigger>
+                        <NavigationMenuTrigger className=" hover:bg-gray-700">About</NavigationMenuTrigger>
                         <NavigationMenuContent className="w-[400px] text-black z-50">
                           <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                             <li>
@@ -113,7 +114,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     onClick={toggleTheme}
                     className="text-white hover:bg-gray-700"
                   >
-                    {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" color="black" />}
                   </Button>
                 </div>
             </div>

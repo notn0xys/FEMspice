@@ -4,6 +4,8 @@ import { Routes, Route, Link } from 'react-router-dom'
 import Login  from './pages/login'
 import About from './pages/about'
 import MainPage from './pages/mainpage'
+import Signup from './pages/signup'
+// import Signup from './pages/singup'
 import { useEffect } from 'react';
 
 function App() {
@@ -21,9 +23,10 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path='/' element = {<Login/>}  / >
+        <Route path='/' element = {<Login/>}/>
         <Route path='/about' element = {<About/>}/>
         <Route path='/main' element = {<MainPage/>}/>
+        <Route path='/singup' element = {<Signup/>}/>
       </Routes>
     </div>
   )
