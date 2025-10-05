@@ -1,4 +1,5 @@
 def individual_serialize(user) -> dict:
+    print(f"username: {user['username']} id: {user['_id']}")
     return {
         "id": str(user["_id"]),
         "username": user["username"],
