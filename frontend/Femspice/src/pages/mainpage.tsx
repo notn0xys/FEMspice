@@ -84,7 +84,7 @@ export default function App() {
         <Button onClick={() => console.log(nodes)}>check nodes</Button>
         <Button onClick={() => console.log(edges)}>check edges</Button>
 
-      >
+      
         <ReactFlow
           nodes={nodes}
           edges={edges}
