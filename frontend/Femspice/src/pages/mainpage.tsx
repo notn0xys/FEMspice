@@ -102,7 +102,6 @@ export default function App() {
           }}
           onDrop={(event) => {
             event.preventDefault();
-            const reactFlowBounds = reactFlowWrapper.current!.getBoundingClientRect();
             const dataString = event.dataTransfer.getData("application/reactflow");
             const dataObject = JSON.parse(dataString);
             const type = dataObject.type;
@@ -136,9 +135,9 @@ export default function App() {
         }
         >
           <Panel position="top-right" style={{display: "flex", flexDirection: "column", gap: "10px"}}>
-            <Button onClick={() => {
+            {/* <Button onClick={() => {
               runSimulation(nodes, edges);
-            }}>Run Simulation</Button>
+            }}>Run Simulation</Button> */}
             <Button onClick={() => console.log(nodes)}>check nodes</Button>
             <Button onClick={() => console.log(edges)}>check edges</Button>
           </Panel>
@@ -159,6 +158,6 @@ function getAmountOfSameTypes(nodes: Node[], type: string) {
   return nodes.filter((node) => node.type === type).length;
 }
 
-function runSimulation(nodes: Node[], edges: Edge[]) {
-  // call backend Pyspice
-}
+// function runSimulation(nodes: Node[], edges: Edge[]) {
+//   // call backend Pyspice
+// }

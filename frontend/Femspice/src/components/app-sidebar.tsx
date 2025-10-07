@@ -1,5 +1,4 @@
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
-import ResistorNode from "@/electric_components/ResistorNode"
 import {
   Sidebar,
   SidebarContent,

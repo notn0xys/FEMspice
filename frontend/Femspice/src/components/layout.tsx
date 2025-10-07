@@ -4,7 +4,6 @@ import { SquareMenu, Sun, Moon } from 'lucide-react';
 import {
   NavigationMenu,
   NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
