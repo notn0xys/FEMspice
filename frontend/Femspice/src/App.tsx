@@ -7,7 +7,6 @@ import MainPage from './pages/mainpage'
 import Signup from './pages/signup'
 // import Signup from './pages/singup'
 import { useEffect } from 'react';
-import Signup from './pages/signup'
 
 function App() {
   useEffect(() => {
