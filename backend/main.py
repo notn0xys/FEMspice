@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.middleware.cors import CORSMiddleware  
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from config.db import users_collection, simulations_collection, client
@@ -13,15 +14,27 @@ try:
 except Exception as e:
     print(e)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+## CORS Settings
+origins = [
+    "http://localhost",
+    "http://localhost:5173",
+    "https://femspice.noxunya.dev"
+]
+
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 app.include_router(auth.router)
 app.include_router(simulate.router)
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-# @app.get("/items/")
-# async def read_items(token: Annotated[str, Depends(oauth2_scheme)]):
-#     return {"token": token}
