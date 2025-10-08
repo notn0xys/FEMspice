@@ -4,7 +4,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from config.db import users_collection, simulations_collection, client
 from typing import Annotated
-from routers import auth
+from routers import auth, simulate
 
 # Send a ping to confirm a successful connection
 try:
@@ -16,6 +16,7 @@ except Exception as e:
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
 app.include_router(auth.router)
+app.include_router(simulate.router)
 
 @app.get("/")
 def read_root():
