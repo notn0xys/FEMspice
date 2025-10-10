@@ -1,7 +1,15 @@
 import Layout from "@/components/layout"
 
 import { useState, useRef, useEffect} from "react";
-
+import {
+  Dialog,
+  DialogContent,
+  // DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  // DialogTrigger,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input";
 import  {ReactFlow ,
@@ -31,6 +39,7 @@ const nodeTypes = {
 export default function App() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [open, setOpen] = useState(false);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const [nodeName, setNodeName] = useState<string>("");
   const [nodeValue, setNodeValue] = useState<number>(0);
@@ -44,6 +53,30 @@ export default function App() {
     setNodeName(meow_label);
     setNodeValue(meow_value);
   }, [nodeID]);  
+  useEffect(() => {
+    function rotateObject(e: KeyboardEvent) {
+      console.log(e.key);
+      if (e.key === "r" && nodeID !== "") {
+        setNodes((nds) => nds.map((node) => {
+          if (node.id === nodeID) {
+            const currentRotation = typeof node.data.rotation === "number" ? node.data.rotation : 0;
+            const newRotation = (currentRotation + 90) % 360;
+            return {
+              ...node,
+              data: { 
+                ...node.data, 
+                rotation: newRotation 
+              }
+            };
+          }
+          return node;
+        }));
+      }
+    }
+    window.addEventListener("keydown", rotateObject);
+    return () => window.removeEventListener("keydown", rotateObject);
+    
+  }, [nodeID]);
   const onNodesChange = (changes: NodeChange[]) =>
     setNodes((nds) => applyNodeChanges(changes, nds));
   
@@ -70,6 +103,10 @@ export default function App() {
       return node;
     }))
   }
+  const defaultEdgeOptions = {
+    style: { stroke: '#0077ff', strokeWidth: 2 },
+    type: 'smoothstep'
+};
   return (
     
     <Layout>
@@ -79,17 +116,14 @@ export default function App() {
       }}
       ref={reactFlowWrapper}
 
-      >
+      > 
 
-        <Button onClick={() => console.log(nodes)}>check nodes</Button>
-        <Button onClick={() => console.log(edges)}>check edges</Button>
-
-      
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          defaultEdgeOptions={defaultEdgeOptions}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           fitView
@@ -99,6 +133,11 @@ export default function App() {
           onDragOver={(event) => {
             event.preventDefault();
             event.dataTransfer.dropEffect = 'move';
+          }}
+          onNodeDoubleClick={(_, node) => {
+            setNodeID(node?.id || "");
+            setOpen(true);
+
           }}
           onDrop={(event) => {
             event.preventDefault();
@@ -132,6 +171,7 @@ export default function App() {
           onNodeClick={(_, node) => {
             setNodeID(node?.id || "");
           }
+          
         }
         >
           <Panel position="top-right" style={{display: "flex", flexDirection: "column", gap: "10px"}}>
@@ -142,13 +182,23 @@ export default function App() {
             <Button onClick={() => console.log(edges)}>check edges</Button>
           </Panel>
           <Panel position="top-left" style={{display: "flex", flexDirection: "column", gap: "10px", width: "150px"}}>
-            <Input placeholder="Node Name" value={nodeName} onChange={(e) => setNodeName(e.target.value)} onBlur={onChangeNodeName} />
-            <Input placeholder="Node Value" type="number" value={nodeValue} onChange={(e) => setNodeValue(Number(e.target.value))} onBlur={onChangeNodeValue} />
           </Panel>
           <Background />
           <Controls />
           <MiniMap nodeStrokeWidth={3} zoomable pannable />
         </ReactFlow>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit {nodeID} value?</DialogTitle>
+            </DialogHeader>
+            <Input placeholder="Node Name" value={nodeName} onChange={(e) => setNodeName(e.target.value)} onBlur={onChangeNodeName} />
+            <Input placeholder="Node Value" type="number" value={nodeValue} onChange={(e) => setNodeValue(Number(e.target.value))} onBlur={onChangeNodeValue} />
+            <DialogFooter>
+              <Button onClick={() => setOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   )
