@@ -106,7 +106,7 @@ export default function Login() {
                     Don't have an account? 
                   </p>
                   <Link
-                    to="/singup"
+                    to="/signup"
                     className="text-xs text-blue-600 underline hover:text-blue-1000"
                   >
                     <u>Signup</u>
