@@ -5,7 +5,8 @@ import About from './pages/about'
 import MainPage from './pages/mainpage'
 import Signup from './pages/signup'
 import { useEffect } from 'react';
-
+import UserRoute from './routes/UserRoute'
+import PublicRoute from './routes/PublicRoute';
 function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -21,12 +22,11 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path='/' element = {<Login/>}  / >
-        <Route path='/login' element = {<Login/>}  / >
-        <Route path='/about' element = {<About/>}/>
-        <Route path='/home' element = {<MainPage/>}/>
-        <Route path='/signup' element = {<Signup/>}/>
-
+        <Route path='/' element = {<PublicRoute><Login/></PublicRoute>}  / >
+        <Route path='/login' element = {<PublicRoute><Login/></PublicRoute>}  / >
+        <Route path='/about' element = {<PublicRoute><About/></PublicRoute>}/>
+        <Route path='/home' element = {<UserRoute><MainPage/></UserRoute>}/>
+        <Route path='/signup' element = {<PublicRoute><Signup/></PublicRoute>}/>
       </Routes>
     </div>
   )

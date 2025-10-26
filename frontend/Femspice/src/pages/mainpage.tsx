@@ -1,7 +1,5 @@
 import Layout from "@/components/layout"
-
 import { useState, useRef, useEffect} from "react";
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input";
 import  {ReactFlow ,
@@ -43,7 +41,7 @@ export default function App() {
     const meow_value = typeof node?.data.value === "number" ? node.data.value : 0;
     setNodeName(meow_label);
     setNodeValue(meow_value);
-  }, [nodeID]);  
+  }, [nodeID, nodes]);  
   const onNodesChange = (changes: NodeChange[]) =>
     setNodes((nds) => applyNodeChanges(changes, nds));
   
@@ -80,11 +78,6 @@ export default function App() {
       ref={reactFlowWrapper}
 
       >
-
-        <Button onClick={() => console.log(nodes)}>check nodes</Button>
-        <Button onClick={() => console.log(edges)}>check edges</Button>
-
-      
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -135,9 +128,9 @@ export default function App() {
         }
         >
           <Panel position="top-right" style={{display: "flex", flexDirection: "column", gap: "10px"}}>
-            {/* <Button onClick={() => {
-              runSimulation(nodes, edges);
-            }}>Run Simulation</Button> */}
+            <Button onClick={() => {
+
+            }}>Run Simulation</Button>
             <Button onClick={() => console.log(nodes)}>check nodes</Button>
             <Button onClick={() => console.log(edges)}>check edges</Button>
           </Panel>
@@ -157,7 +150,3 @@ export default function App() {
 function getAmountOfSameTypes(nodes: Node[], type: string) {
   return nodes.filter((node) => node.type === type).length;
 }
-
-// function runSimulation(nodes: Node[], edges: Edge[]) {
-//   // call backend Pyspice
-// }
