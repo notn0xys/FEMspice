@@ -21,6 +21,7 @@ analysis = simulator.operating_point()
 
 for node in analysis.nodes.values():
     print('Node {}: {:4.1f} V'.format(str(node), node.item()))
+    # fuck you
 
 
 
