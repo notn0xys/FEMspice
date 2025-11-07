@@ -23,7 +23,6 @@ import ResistorNode from "@/electric_components/ResistorNode";
 import VoltageSourceNode from "@/electric_components/VoltageSourceNode";
 
 type NodeData = {
-  id?: string;
   label: string;
   value: number;
   rotation?: number;
@@ -37,7 +36,7 @@ const nodeTypes = {
 export default function App() {
   const [nodes, setNodes] = useState<Node<NodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<Node<NodeData>, Edge> | null>(null);
   const [nodeName, setNodeName] = useState<string>("");
   const [nodeValue, setNodeValue] = useState<number>(0);
   const [nodeRotation, setNodeRotation] = useState<number>(0);
@@ -84,7 +83,7 @@ export default function App() {
     setEdges((eds) => applyEdgeChanges(changes, eds));
   
   const onConnect = (connection: Connection) =>
-    setEdges((eds) => addEdge({ ...connection, type: 'step' }, eds));
+    setEdges((eds) => addEdge({ ...connection, type: 'straight' }, eds));
   function onChangeNodeName() {
     if (nodeID === "") return;
     setNodes((nds) => nds.map((node) => {
@@ -129,6 +128,7 @@ export default function App() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
+          defaultEdgeOptions={{ type: 'straight' }}
           fitView
           selectionOnDrag
           selectionMode={SelectionMode.Partial}

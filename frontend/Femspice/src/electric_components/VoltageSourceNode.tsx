@@ -2,15 +2,14 @@ import {Handle, Position, useUpdateNodeInternals} from "@xyflow/react";
 import { useEffect } from "react";
 import type { NodeProps } from "@xyflow/react";
 
-type VoltageSourceData = {
-    id: string;
+type VoltageSourceData = Record<string, unknown> & {
     label: string;
     value: number;
     rotation?: number;
 };
 
 export default function VoltageSourceNode({id, data}: NodeProps<VoltageSourceData>) {
-    const rotation = data.rotation || 0;
+    const rotation = (data.rotation as number) || 0;
     const updateNodeInternals = useUpdateNodeInternals();
     
     useEffect(() => {
@@ -31,32 +30,20 @@ export default function VoltageSourceNode({id, data}: NodeProps<VoltageSourceDat
                 alignItems: 'center'
             }}
         >
-            <strong>{data.value} V</strong>
+            <strong>{data.value as number} V</strong>
             <div></div>
             <strong>-       +</strong>
             <Handle 
                 type="source" 
                 position={Position.Right} 
                 id="right" 
-                style={{ background: '#555', top: '50%', transform: 'translateY(-50%)' }}
+                style={{ background: '#555' }}
             />
             <Handle 
                 type="target" 
-                position={Position.Right} 
-                id="right-target" 
-                style={{ background: '#555', top: '50%', transform: 'translateY(-50%)' }}
-            />
-            <Handle 
-                type="source" 
                 position={Position.Left} 
                 id="left" 
-                style={{ background: '#555', top: '50%', transform: 'translateY(-50%)' }}
-            />
-            <Handle 
-                type="target" 
-                position={Position.Left} 
-                id="left-target" 
-                style={{ background: '#555', top: '50%', transform: 'translateY(-50%)' }}
+                style={{ background: '#555' }}
             />
         </div>
     )
