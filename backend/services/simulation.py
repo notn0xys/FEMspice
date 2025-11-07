@@ -37,7 +37,7 @@ def convert_to_pyspice(value: float, prefix: str, unit_type: str):
 
     return (value * factor) @ unit_constructor
 
-def build_and_simulate(components):
+def build_and_simulate_DC(components):
     logger = Logging.setup_logging()
     circuit = Circuit('Generated Circuit')
 
@@ -63,4 +63,42 @@ def build_and_simulate(components):
     for node in analysis.nodes.values():
         results[str(node)] = float(node.item())
 
-    return results
+    component_currents = {}
+    for comp in components:
+        if comp.type == "R":
+            # node voltages
+            V1 = results.get(str(comp.node1), 0.0)
+            V2 = results.get(str(comp.node2), 0.0)
+            # resistor value in ohms
+            R_value = comp.value * prefix_map.get(comp.prefix or "", 1)
+            if R_value == 0:
+                I = 0.0
+            else:
+                I = (V1 - V2) / R_value
+            component_currents[comp.name] = I  # positive = node1 → node2
+
+        elif comp.type == "V":
+            try:
+                I = -float(analysis.branches["v" + comp.name][0])
+            except Exception:
+                I = None
+            component_currents[comp.name] = I
+        elif comp.type == "I":
+        # Current source: value already given by user 
+            I = comp.value * prefix_map.get(comp.prefix or "", 1)
+            component_currents[comp.name] = I
+
+        elif comp.type in ("C", "L"):
+            # For DC operating point:
+            # - Capacitors = open circuit → 0 A
+            # - Inductors = short circuit → branch current if exists
+            if comp.type == "C":
+                I = 0.0
+            else:  # L
+                try:
+                    I = float(analysis.branches[comp.name][0])
+                except Exception:
+                    I = None
+            component_currents[comp.name] = I
+
+    return {"node_voltages": results, "component_currents": component_currents}
