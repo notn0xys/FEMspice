@@ -1,4 +1,5 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import type { ComponentType, DragEvent } from "react"
+import { Calendar, Home, Inbox, Search, Settings, Zap, Square } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -9,6 +10,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import { useWireMode } from "@/context/wire-mode-context"
+
+type ComponentPaletteItem = {
+  title: string
+  type: string
+  value: number
+  icon?: ComponentType<{ className?: string }>
+}
 
 // Menu items.
 const items = [
@@ -40,8 +50,35 @@ const items = [
 ]
 
 
+const componentPalette: ComponentPaletteItem[] = [
+  {
+    title: "Voltage Source",
+    type: "voltageSource",
+    value: 5,
+    icon: Zap,
+  },
+  {
+    title: "Resistor",
+    type: "resistor",
+    value: 1000,
+    icon: Square,
+  },
+]
 
 export function AppSidebar() {
+  const { wireMode, toggleWireMode } = useWireMode();
+
+  const handleDragStart = (
+    event: DragEvent<HTMLButtonElement>,
+    component: ComponentPaletteItem
+  ) => {
+    event.dataTransfer.setData(
+      "application/femspice-component",
+      JSON.stringify({ type: component.type, value: component.value, title: component.title })
+    )
+    event.dataTransfer.effectAllowed = "move"
+  }
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -64,57 +101,36 @@ export function AppSidebar() {
         </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Components</SidebarGroupLabel>
-          <SidebarGroupContent className="overflow-y-auto gap-20">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                  <div draggable = "true" 
-                    className="align-center w-[90%] m-auto"
-                    onDragStart={(event) => {
-                      event.dataTransfer.setData(
-                        "application/reactflow",
-                        JSON.stringify({ type: "resistor", label: "Resistor", value: 100 })
-                      )
-                      event.dataTransfer.effectAllowed = "move"
-                      
-                    }}>
-                    <ResistorPreview />
-                  </div>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                  <div draggable = "true" 
-                    className="align-center w-[90%] m-auto"
-                    onDragStart={(event) => {
-                      event.dataTransfer.setData(
-                        "application/reactflow",
-                        JSON.stringify({ type: "voltageSource", label: "Voltage Source", value: 10 })
-                      )
-                      event.dataTransfer.effectAllowed = "move"
-                    }}>
-                    <VoltageSourcePreview />
-                  </div>
-              </SidebarMenuItem>
-            </SidebarMenu>
+          <SidebarGroupContent className="overflow-y-auto gap-4 p-2">
+            <div className="flex flex-col gap-3">
+              <Button
+                variant={wireMode ? "default" : "outline"}
+                onClick={toggleWireMode}
+              >
+                {wireMode ? "Wire Mode: On" : "Wire Mode: Off"}
+              </Button>
+              <SidebarMenu>
+                {componentPalette.map((component) => (
+                  <SidebarMenuItem key={component.type}>
+                    <SidebarMenuButton
+                      draggable
+                      onDragStart={(event) => handleDragStart(event, component)}
+                    >
+                      {component.icon ? (
+                        <component.icon className="h-4 w-4 shrink-0" />
+                      ) : null}
+                      <span>{component.title}</span>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {component.value}
+                      </span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
-}
-
-function ResistorPreview() {
-  return (
-        <div className="p-2 border-black-200 border rounded text-center bg-white  cursor-grab hover:cursor-grabbing ">
-            <strong>Resistor</strong>
-            <p>10 Ω</p>
-        </div>
-  )
-}
-function VoltageSourcePreview() {
-  return (
-        <div className="p-2 border-black-200 border rounded text-center bg-white cursor-grab hover:cursor-grabbing ">
-            <strong>Voltage Source</strong>
-            <p>10 V</p>
-        </div>
   )
 }

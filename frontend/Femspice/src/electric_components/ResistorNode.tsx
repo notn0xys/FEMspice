@@ -1,49 +1,128 @@
-import { Handle, Position, useUpdateNodeInternals } from "@xyflow/react";
-import { useEffect } from "react";
-import type { NodeProps } from "@xyflow/react";
+import { Group, Line, Rect, Text, Circle } from 'react-konva';
+import type Konva from 'konva';
 
-type ResistorData = Record<string, unknown> & {
-  label: string;
-  value: number;
+interface ResistorNodeProps {
+  x?: number;
+  y?: number;
   rotation?: number;
+  resistance?: string | number;
+  onDragMove?: (e: Konva.KonvaEventObject<DragEvent>) => void;
+  onDragEnd?: (e: Konva.KonvaEventObject<DragEvent>) => void;
+  onSelect?: () => void;
+  isSelected?: boolean;
+  onPinPointerDown?: (pinId: string, event: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => void;
+  wireMode?: boolean;
+  activePin?: string | null;
+  onContextMenu?: (e: Konva.KonvaEventObject<PointerEvent>) => void;
+}
+
+const RESISTOR_WIDTH = 80;
+const RESISTOR_HEIGHT = 20;
+const RESISTOR_LEAD_LENGTH = 20;
+
+export const RESISTOR_PIN_OFFSETS = {
+  left: { x: -RESISTOR_WIDTH / 2 - RESISTOR_LEAD_LENGTH, y: 0 },
+  right: { x: RESISTOR_WIDTH / 2 + RESISTOR_LEAD_LENGTH, y: 0 },
 };
 
-export default function ResistorNode({ id, data }: NodeProps<ResistorData>) {
-  const rotation = (data.rotation as number) || 0;
-  const updateNodeInternals = useUpdateNodeInternals();
+export default function ResistorNode({
+  x = 0,
+  y = 0,
+  rotation = 0,
+  resistance = '1kΩ',
+  onDragMove,
+  onDragEnd,
+  onSelect,
+  isSelected = false,
+  onPinPointerDown,
+  wireMode = false,
+  activePin = null,
+  onContextMenu,
+}: ResistorNodeProps) {
+  const label = typeof resistance === 'number' ? `${resistance}Ω` : resistance;
 
-  useEffect(() => {
-    updateNodeInternals(id);
-  }, [rotation, id, updateNodeInternals]);
+  const handlePinEvent = (pinId: string) => (
+    event: Konva.KonvaEventObject<MouseEvent | TouchEvent>
+  ) => {
+    event.cancelBubble = true;
+    onPinPointerDown?.(pinId, event);
+  };
 
   return (
-    <div
-      className="p-2 border-black-200 border rounded text-center bg-white"
-      style={{
-        transform: `rotate(${rotation}deg)`,
-        transformOrigin: "center",
-        width: "100px",
-        height: "60px",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+    <Group
+      x={x}
+      y={y}
+      rotation={rotation}
+      draggable={!wireMode}
+      onDragMove={onDragMove}
+      onDragEnd={onDragEnd}
+      onClick={onSelect}
+      onTap={onSelect}
+      onContextMenu={onContextMenu}
     >
-      <strong>Resistor</strong>
-      <p>{data.label as string}</p>
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        style={{ background: "#555" }}
+      {/* Leads */}
+      <Line
+        points={[RESISTOR_PIN_OFFSETS.left.x, 0, -RESISTOR_WIDTH / 2, 0]}
+        stroke="black"
+        strokeWidth={2}
       />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left"
-        style={{ background: "#555" }}
+      <Line
+        points={[RESISTOR_WIDTH / 2, 0, RESISTOR_PIN_OFFSETS.right.x, 0]}
+        stroke="black"
+        strokeWidth={2}
       />
-    </div>
+
+      {/* Connection pins */}
+      <Circle
+        x={RESISTOR_PIN_OFFSETS.left.x}
+        y={RESISTOR_PIN_OFFSETS.left.y}
+        radius={wireMode ? 8 : 6}
+        fill={wireMode ? (activePin === 'left' ? '#1d4ed8' : '#ffffff') : 'rgba(0,0,0,0)'}
+        stroke={wireMode ? '#1f2937' : 'rgba(0,0,0,0)'}
+        strokeWidth={wireMode ? 1.5 : 0}
+        opacity={wireMode ? 1 : 0}
+        hitStrokeWidth={20}
+        onMouseDown={handlePinEvent('left')}
+        onTouchStart={handlePinEvent('left')}
+      />
+      <Circle
+        x={RESISTOR_PIN_OFFSETS.right.x}
+        y={RESISTOR_PIN_OFFSETS.right.y}
+        radius={wireMode ? 8 : 6}
+        fill={wireMode ? (activePin === 'right' ? '#1d4ed8' : '#ffffff') : 'rgba(0,0,0,0)'}
+        stroke={wireMode ? '#1f2937' : 'rgba(0,0,0,0)'}
+        strokeWidth={wireMode ? 1.5 : 0}
+        opacity={wireMode ? 1 : 0}
+        hitStrokeWidth={20}
+        onMouseDown={handlePinEvent('right')}
+        onTouchStart={handlePinEvent('right')}
+      />
+
+      {/* Resistor body */}
+      <Rect
+        x={-RESISTOR_WIDTH / 2}
+        y={-RESISTOR_HEIGHT / 2}
+        width={RESISTOR_WIDTH}
+        height={RESISTOR_HEIGHT}
+        fill="#f8f8f8"
+        stroke={isSelected ? "#2563eb" : "black"}
+        strokeWidth={isSelected ? 3 : 2}
+        cornerRadius={4}
+        shadowEnabled={isSelected}
+        shadowBlur={10}
+        shadowColor="#2563eb"
+      />
+
+      {/* Label */}
+      <Text
+        text={label}
+        x={-RESISTOR_WIDTH / 2}
+        y={RESISTOR_HEIGHT / 2 + 6}
+        width={RESISTOR_WIDTH}
+        align="center"
+        fontSize={12}
+        fill="black"
+      />
+    </Group>
   );
 }

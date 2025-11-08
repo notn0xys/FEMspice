@@ -12,6 +12,7 @@ import {
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { WireModeProvider } from "@/context/wire-mode-context";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false);
@@ -34,16 +35,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <SidebarProvider 
-      defaultOpen={true}
-      style={{
-        "--sidebar-width": "300px", 
-        "--sidebar-width-mobile": "280px"
-      } as React.CSSProperties}
-    >
-      <div className="flex h-screen w-full">
-        <AppSidebar />
-        <div className="flex flex-col flex-1 overflow-hidden">
+
+      <SidebarProvider 
+        defaultOpen={true}
+        style={{
+          "--sidebar-width": "300px", 
+          "--sidebar-width-mobile": "280px"
+        } as React.CSSProperties}
+      >
+        <div className="flex h-screen w-full">
+          <AppSidebar />
+          <div className="flex flex-col flex-1 overflow-hidden">
             <div className="flex items-center gap-2 p-2 border-b">
                 <SidebarTrigger >
                   {isDark ? <SquareMenu className="h-4 w-4" /> : <SquareMenu className="h-4 w-4" color="black" />}
@@ -121,7 +123,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
         </div>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
   )
 }
 
