@@ -30,6 +30,9 @@ const PIN_DEFINITIONS = {
   voltageSource: VOLTAGE_SOURCE_PIN_OFFSETS,
 } as const;
 
+const isSupportedComponentType = (type: string): type is ComponentType =>
+  type in PIN_DEFINITIONS;
+
 type ComponentConnections = Record<string, string[]>;
 type ComponentType = keyof typeof PIN_DEFINITIONS;
 type WireId = string;
@@ -85,7 +88,7 @@ export default function MainPage() {
     () => components.find((component) => component.id === inspectorId) ?? null,
     [components, inspectorId],
   );
-  const { wireMode, setWireMode, toggleWireMode } = useWireMode();
+  const { wireMode, toggleWireMode } = useWireMode();
   //Resize stage to fit container
   useEffect(() => {
     const updateStageSize = () => {
@@ -160,8 +163,8 @@ export default function MainPage() {
     return () => window.removeEventListener("keydown", handler);
   }, [draftWire]);
   const handleStagePointerMove = useCallback(
-    (event) => {
-      if (!wireMode || !draftWire) return;
+    (event: KonvaEventObject<PointerEvent>) => {
+      if (!wireMode) return;
       const pointer = event.target.getStage()?.getPointerPosition();
       if (!pointer) return;
 
@@ -178,17 +181,27 @@ export default function MainPage() {
           : prev
       );
     },
-    [wireMode, draftWire]
+    [wireMode]
   );
 
-  function getPinPosition(component: CanvasComponent, pinId: string): { x: number; y: number } | null {
-    const pinOffsets = PIN_DEFINITIONS[component.type as ComponentType];
-    if (!pinOffsets) return null;
+  function getPinPosition(
+    component: CanvasComponent,
+    pinId: string,
+  ): { x: number; y: number } | null {
+    if (!isSupportedComponentType(component.type)) {
+      return null;
+    }
 
-    const offset = pinOffsets[pinId as keyof typeof pinOffsets];
-    if (!offset) return null;
+    const pinOffsets = PIN_DEFINITIONS[component.type] as Record<
+      string,
+      { x: number; y: number }
+    >;
+    const offset = pinOffsets[pinId];
 
-    // Account for rotation
+    if (!offset) {
+      return null;
+    }
+
     const radians = (component.rotation * Math.PI) / 180;
     const cos = Math.cos(radians);
     const sin = Math.sin(radians);
@@ -649,19 +662,10 @@ export default function MainPage() {
     }
   }
   const handleStagePointerDown = useCallback(
-    (event: KonvaEventObject<MouseEvent | TouchEvent>) => {
-      if (!wireMode || !draftWire) {
-        if (event.target === event.target.getStage()) {
-          handleSelect(null);
-        }
-        return;
-      }
-
+    (event: KonvaEventObject<PointerEvent>) => {
       const stage = event.target.getStage();
-      const pointer = stage?.getPointerPosition();
       const clickedStage = event.target === stage;
 
-      if (!pointer) return;
       if (!wireMode || !draftWire) {
         if (clickedStage) {
           setSelectedWireId(null);
@@ -669,6 +673,10 @@ export default function MainPage() {
         }
         return;
       }
+
+      const pointer = stage?.getPointerPosition();
+      if (!pointer) return;
+
       setDraftWire((prev) =>
         prev
           ? {

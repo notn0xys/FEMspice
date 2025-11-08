@@ -12,7 +12,6 @@ import {
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { WireModeProvider } from "@/context/wire-mode-context";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false);
