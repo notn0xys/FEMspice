@@ -5,7 +5,6 @@ import About from './pages/about'
 import MainPage from './pages/mainpage'
 import Signup from './pages/signup'
 import { useEffect } from 'react';
-import UserRoute from './routes/UserRoute'
 import PublicRoute from './routes/PublicRoute';
 function App() {
   useEffect(() => {
@@ -25,7 +24,7 @@ function App() {
         <Route path='/' element = {<PublicRoute><Login/></PublicRoute>}  / >
         <Route path='/login' element = {<PublicRoute><Login/></PublicRoute>}  / >
         <Route path='/about' element = {<PublicRoute><About/></PublicRoute>}/>
-        <Route path='/home' element = {<UserRoute><MainPage/></UserRoute>}/>
+        <Route path='/home' element = {<PublicRoute><MainPage/></PublicRoute>}/>
         <Route path='/signup' element = {<PublicRoute><Signup/></PublicRoute>}/>
       </Routes>
     </div>
