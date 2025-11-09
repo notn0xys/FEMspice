@@ -7,10 +7,10 @@ router = APIRouter(
     tags=["simulate"],
 )
 
-@router.post("/", status_code=status.HTTP_200_OK)
+@router.post("/DC", status_code=status.HTTP_200_OK)
 async def simulate_circuit(sim_request: SimulationRequest):
     try:
-        result = sim.build_and_simulate(sim_request.components)
+        result = sim.build_and_simulate_DC(sim_request.components)
         return {"result": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
