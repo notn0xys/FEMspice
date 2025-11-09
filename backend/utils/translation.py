@@ -43,6 +43,7 @@ def convert_frontend_to_netlist(frontend_data):
     # Step 3: build simplified component list
     parsed_components = []
     type_counters = defaultdict(int)  # counts per type
+    comp_mapping = {}
     for comp in components:
         pin_connections = comp["connections"]
         pins = list(pin_connections.keys())
@@ -67,6 +68,7 @@ def convert_frontend_to_netlist(frontend_data):
         comp_type = type_map.get(comp["type"])
         type_counters[comp_type] += 1
         comp_name = f"{comp_type}{type_counters[comp_type]}"
+        comp_mapping[comp["id"]] = comp_name
 
         # parsed_components.append({
         #     "type": comp_type,
@@ -94,6 +96,6 @@ def convert_frontend_to_netlist(frontend_data):
             prefix=""  # Default to no prefix; can be extended to parse from frontend
          )
         )
-        
+
     json_safe_map = {f"{k[0]}:{k[1]}": v for k, v in net_name_map.items()}
-    return {"components": parsed_components, "mappings": json_safe_map}
+    return {"components": parsed_components, "mappings": json_safe_map, 'components_mapping': comp_mapping}
