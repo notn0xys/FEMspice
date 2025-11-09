@@ -426,6 +426,31 @@ export default function MainPage() {
     [handleSelect],
   );
 
+  const handleRunCircuit = useCallback(() => {
+    const payload = {
+      components: components.map((component) => ({
+        id: component.id,
+        type: component.type,
+        position: { x: component.x, y: component.y },
+        rotation: component.rotation,
+        value: component.value ?? null,
+        title: component.title ?? null,
+        connections: component.connections,
+      })),
+      wires: wires.map((wire) => ({
+        id: wire.id,
+        from: wire.from,
+        to: wire.to,
+        points: wire.points,
+        color: wire.color ?? null,
+      })),
+    };
+
+    console.groupCollapsed("[FEMspice] Run circuit payload");
+    console.log(payload);
+    console.groupEnd();
+  }, [components, wires]);
+
   const handleDraftChange = useCallback(
     (field: keyof ComponentDraft, value: string) => {
       setDraft((prev) => ({ ...prev, [field]: value }));
@@ -708,7 +733,7 @@ export default function MainPage() {
         ? "Enter voltage"
         : "Enter value";
   return (
-    <Layout>
+  <Layout onRunCircuit={handleRunCircuit}>
       <div
         ref={containerRef}
         className="flex-1 h-full"
