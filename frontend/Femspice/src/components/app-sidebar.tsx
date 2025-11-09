@@ -13,6 +13,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { useWireMode } from "@/context/wire-mode-context"
 
+type AppSidebarProps = {
+  onRunCircuit?: () => void
+}
+
 type ComponentPaletteItem = {
   title: string
   type: string
@@ -65,7 +69,7 @@ const componentPalette: ComponentPaletteItem[] = [
   },
 ]
 
-export function AppSidebar() {
+export function AppSidebar({ onRunCircuit }: AppSidebarProps) {
   const { wireMode, toggleWireMode } = useWireMode();
 
   const handleDragStart = (
@@ -127,6 +131,11 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
+              {onRunCircuit ? (
+                <Button className="w-full" onClick={onRunCircuit}>
+                  Run Circuit
+                </Button>
+              ) : null}
             </div>
           </SidebarGroupContent>
         </SidebarGroup>

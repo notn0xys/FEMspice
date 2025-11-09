@@ -13,7 +13,12 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+type LayoutProps = {
+  children: React.ReactNode;
+  onRunCircuit?: () => void;
+};
+
+export default function Layout({ children, onRunCircuit }: LayoutProps) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -43,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         } as React.CSSProperties}
       >
         <div className="flex h-screen w-full">
-          <AppSidebar />
+          <AppSidebar onRunCircuit={onRunCircuit} />
           <div className="flex flex-col flex-1 overflow-hidden">
             <div className="flex items-center gap-2 p-2 border-b">
                 <SidebarTrigger >
