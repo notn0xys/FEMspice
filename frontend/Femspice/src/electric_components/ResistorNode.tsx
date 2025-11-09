@@ -19,6 +19,7 @@ interface ResistorNodeProps {
 const RESISTOR_WIDTH = 80;
 const RESISTOR_HEIGHT = 20;
 const RESISTOR_LEAD_LENGTH = 20;
+const RESISTOR_ICON_MARGIN = 6;
 
 export const RESISTOR_PIN_OFFSETS = {
   left: { x: -RESISTOR_WIDTH / 2 - RESISTOR_LEAD_LENGTH, y: 0 },
@@ -104,13 +105,41 @@ export default function ResistorNode({
         y={-RESISTOR_HEIGHT / 2}
         width={RESISTOR_WIDTH}
         height={RESISTOR_HEIGHT}
-        fill="#f8f8f8"
+        fill="#ffffff"
         stroke={isSelected ? "#2563eb" : "black"}
         strokeWidth={isSelected ? 3 : 2}
-        cornerRadius={4}
+        cornerRadius={6}
         shadowEnabled={isSelected}
         shadowBlur={10}
         shadowColor="#2563eb"
+      />
+
+      {/* Icon inside resistor */}
+      <Line
+        points={[
+          -RESISTOR_WIDTH / 2 + RESISTOR_ICON_MARGIN,
+          0,
+          -RESISTOR_WIDTH / 2 + 14,
+          -RESISTOR_HEIGHT / 2 + 4,
+          -RESISTOR_WIDTH / 2 + 22,
+          RESISTOR_HEIGHT / 2 - 4,
+          -RESISTOR_WIDTH / 2 + 30,
+          -RESISTOR_HEIGHT / 2 + 4,
+          -RESISTOR_WIDTH / 2 + 38,
+          RESISTOR_HEIGHT / 2 - 4,
+          -RESISTOR_WIDTH / 2 + 46,
+          -RESISTOR_HEIGHT / 2 + 4,
+          -RESISTOR_WIDTH / 2 + 54,
+          RESISTOR_HEIGHT / 2 - 4,
+          -RESISTOR_WIDTH / 2 + 62,
+          -RESISTOR_HEIGHT / 2 + 4,
+          RESISTOR_WIDTH / 2 - RESISTOR_ICON_MARGIN,
+          0,
+        ]}
+        stroke="#1f2937"
+        strokeWidth={2}
+        lineJoin="round"
+        lineCap="round"
       />
 
       {/* Label */}
