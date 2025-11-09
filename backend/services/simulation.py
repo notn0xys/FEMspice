@@ -67,8 +67,9 @@ def build_and_simulate_DC(components):
     for comp in components:
         if comp.type == "R":
             # node voltages
-            V1 = results.get(str(comp.node1), 0.0)
-            V2 = results.get(str(comp.node2), 0.0)
+            print(results)
+            V1 = results.get(str(comp.node1).lower(), 0.0)
+            V2 = results.get(str(comp.node2).lower(), 0.0)
             # resistor value in ohms
             R_value = comp.value * prefix_map.get(comp.prefix or "", 1)
             if R_value == 0:
@@ -102,3 +103,25 @@ def build_and_simulate_DC(components):
             component_currents[comp.name] = I
 
     return {"node_voltages": results, "component_currents": component_currents}
+
+# def build_and_simulate_transient(components, step_time, end_time):
+#     logger = Logging.setup_logging()
+#     circuit = Circuit('Generated Circuit')
+
+#     for comp in components:
+#         value_with_unit = convert_to_pyspice(comp.value, comp.prefix, comp.unit)
+#         if comp.type == "R":
+#             circuit.R(comp.name, comp.node1, comp.node2, value_with_unit)
+#         elif comp.type == "V":
+#             circuit.V(comp.name, comp.node1, comp.node2, value_with_unit)
+#         elif comp.type == "C":
+#             circuit.C(comp.name, comp.node1, comp.node2, value_with_unit)
+#         elif comp.type == "L":
+#             circuit.L(comp.name, comp.node1, comp.node2, value_with_unit)
+#         elif comp.type == "I":
+#             circuit.I(comp.name, comp.node1, comp.node2, value_with_unit)
+#         elif comp.type=="PV": ## pulse voltage source
+#             pass
+            
+#         else:
+#             raise ValueError(f"Unsupported component type: {comp.type}")

@@ -7,23 +7,23 @@ import matplotlib.pyplot as plt
 
 logger = Logging.setup_logging()
 
-# circuit = Circuit('Resistor Bridge')
+circuit = Circuit('Resistor Bridge')
 
-# circuit.V('input', 1, circuit.gnd, 10@u_V)
-# circuit.R(1, 1, 2, 2@u_kΩ)
-# circuit.R(2, 1, 3, 1@u_kΩ)
-# circuit.R(3, 2, circuit.gnd, 1@u_kΩ)
-# circuit.R(4, 3, circuit.gnd, 2@u_kΩ)
-# circuit.R(5, 3, 2, 2@u_kΩ)
+circuit.V('input', 1, circuit.gnd, 10@u_V)
+circuit.R('R1', 1, 2, 2@u_kΩ)
+circuit.R('R2', 1, 3, 1@u_kΩ)
+circuit.R(3, 2, circuit.gnd, 1@u_kΩ)
+circuit.R(4, 3, circuit.gnd, 2@u_kΩ)
+circuit.R(5, 3, 2, 2@u_kΩ)
 
-# simulator = circuit.simulator(temperature=25, nominal_temperature=25)
-# analysis = simulator.operating_point()
+simulator = circuit.simulator(temperature=25, nominal_temperature=25)
+analysis = simulator.operating_point()
 
-# for node in analysis.nodes.values():
-#     print('Node {}: {:4.1f} V'.format(str(node), node.item()))
-#     # fuck you
-# print(f"{-float(analysis.branches['vinput'][0]):.3e} A")
-# print(len(analysis.branches))
+for node in analysis.nodes.values():
+    print('Node {}: {:4.1f} V'.format(str(node), node.item()))
+    # fuck you
+print(f"{-float(analysis.branches['vinput'][0]):.3e} A")
+print(len(analysis.branches))
 
 ## -- SWEEP SOURCE
 
@@ -58,52 +58,56 @@ logger = Logging.setup_logging()
 # plt.grid(True)
 # plt.show()
 
-import numpy as np
-import matplotlib.pyplot as plt
-from PySpice.Spice.Netlist import Circuit
-from PySpice.Unit import *
+# import numpy as np
+# import matplotlib.pyplot as plt
+# from PySpice.Spice.Netlist import Circuit
+# from PySpice.Unit import *
 
-# Create RC circuit
-circuit = Circuit('RC Transient Example')
+# # Create RC circuit
+# circuit = Circuit('RC Transient Example')
 
-# Pulse voltage source: 0V → 10V step
-source = circuit.PulseVoltageSource('input', 'in', circuit.gnd,
-                                    initial_value=0@u_V,
-                                    pulsed_value=10@u_V,
-                                    pulse_width=10@u_ms,
-                                    period=20@u_ms)
+# # Pulse voltage source: 0V → 10V step
+# source = circuit.PulseVoltageSource('input', 'in', circuit.gnd,
+#                                     initial_value=0@u_V,
+#                                     pulsed_value=10@u_V,
+#                                     pulse_width=10@u_ms,
+#                                     period=20@u_ms)
 
-# Resistor and capacitor
-circuit.R(1, 'in', 'out', 1@u_kΩ)
-circuit.C(1, 'out', circuit.gnd, 1@u_uF)  # 1 µF
+# # Resistor and capacitor
+# circuit.R(1, 'in', 'out', 1@u_kΩ)
+# circuit.C(1, 'out', circuit.gnd, 1@u_uF)  # 1 µF
 
-# Theoretical time constant
-tau = circuit['R1'].resistance * circuit['C1'].capacitance  # tau = RC
-print(f"Theoretical tau = {tau}")
+# # Theoretical time constant
+# tau = circuit['R1'].resistance * circuit['C1'].capacitance  # tau = RC
+# print(f"Theoretical tau = {tau}")
 
-# Simulator
-simulator = circuit.simulator(temperature=25, nominal_temperature=25)
+# # Simulator
+# simulator = circuit.simulator(temperature=25, nominal_temperature=25)
 
-# Transient analysis
-step_time = 10@u_us
-analysis = simulator.transient(step_time=step_time, end_time=30@u_ms)
+# # Transient analysis
+# step_time = 50@u_us
+# analysis = simulator.transient(step_time=step_time, end_time=30@u_ms)
 
-# Theoretical RC charging curve
-def v_out_theory(t, tau):
-    return float(source.pulsed_value) * (1 - np.exp(np.array(t)/(-float(tau))))
+# # Theoretical RC charging curve
+# def v_out_theory(t, tau):
+#     return float(source.pulsed_value) * (1 - np.exp(np.array(t)/(-float(tau))))
 
-# Plot
-plt.figure(figsize=(10,5))
-plt.plot(analysis.time, analysis['in'], label='Vin [V]')
-plt.plot(analysis.time, analysis['out'], label='Vout [V] (simulated)')
-plt.plot(analysis.time, v_out_theory(analysis.time, tau), '--', label='Vout [V] (theory)')
-plt.axvline(float(tau), color='red', linestyle=':', label='tau')
-plt.xlabel('Time [s]')
-plt.ylabel('Voltage [V]')
-plt.title('RC Circuit Transient Response')
-plt.grid(True)
-plt.legend()
-plt.show()
+# print(len(analysis.time))
+
+
+# # Plot
+
+# plt.figure(figsize=(10,5))
+# plt.plot(analysis.time, analysis['in'], label='Vin [V]')
+# plt.plot(analysis.time, analysis['out'], label='Vout [V] (simulated)')
+# plt.plot(analysis.time, v_out_theory(analysis.time, tau), '--', label='Vout [V] (theory)')
+# plt.axvline(float(tau), color='red', linestyle=':', label='tau')
+# plt.xlabel('Time [s]')
+# plt.ylabel('Voltage [V]')
+# plt.title('RC Circuit Transient Response')
+# plt.grid(True)
+# plt.legend()
+# plt.show()
 
 
 
