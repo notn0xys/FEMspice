@@ -26,4 +26,6 @@ async def test_endpoint(frontend_data: dict):
     translation_res = translate.convert_frontend_to_netlist(frontend_data)
     result = sim.build_and_simulate_DC(translation_res["components"])
 
-    return {"result": result, "mappings": translation_res['mappings'], "temp": translation_res['components']}
+    return {"result": result, 
+            "mappings": translation_res['mappings'], 
+            'components_mapping': translation_res['components_mapping']}
