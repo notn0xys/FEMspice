@@ -11,6 +11,12 @@ import VoltageSourceNode, {
 import ResistorNode, {
   RESISTOR_PIN_OFFSETS,
 } from "@/electric_components/ResistorNode";
+import CapacitorNode, {
+  CAPACITOR_PIN_OFFSETS,
+} from "@/electric_components/CapacitorNode";
+import InductorNode, {
+  INDUCTOR_PIN_OFFSETS,
+} from "@/electric_components/InductorNode";
 import {
   Sheet,
   SheetContent,
@@ -28,6 +34,8 @@ const DRAG_DATA_MIME = "application/femspice-component";
 const PIN_DEFINITIONS = {
   resistor: RESISTOR_PIN_OFFSETS,
   voltageSource: VOLTAGE_SOURCE_PIN_OFFSETS,
+  capacitor: CAPACITOR_PIN_OFFSETS,
+  inductor: INDUCTOR_PIN_OFFSETS,
 } as const;
 
 const isSupportedComponentType = (type: string): type is ComponentType =>
@@ -559,7 +567,7 @@ export default function MainPage() {
       setComponents((prevComponents) =>
         prevComponents.map((component) => {
           if (
-            component.id !== wireToRemove.from.componentId &&
+            component.id !== wireToRemove.from.componentId && 
             component.id !== wireToRemove.to.componentId
           ) {
             return component;
@@ -646,6 +654,42 @@ export default function MainPage() {
             }
           />
         );
+      case "capacitor":
+        return (
+          <CapacitorNode
+            key={component.id}
+            x={component.x}
+            y={component.y}
+            rotation={component.rotation}
+            capacitance={component.value ? `${component.value}F` : "1µF"}
+            onDragEnd={(event) => handleComponentDragEnd(component.id, event)}
+            onSelect={() => handleSelect(component.id)}
+            isSelected={isSelected}
+            onContextMenu={(event) => handleNodeContextMenu(component.id, event)}
+            wireMode={wireMode}
+            onPinPointerDown={(pinId, event) =>
+              handlePinPointerDown(component.id, pinId, event)
+            }
+          />
+        );
+      case "inductor":
+        return (
+          <InductorNode
+            key={component.id}
+            x={component.x}
+            y={component.y}
+            rotation={component.rotation}
+            inductance={component.value ? `${component.value}H` : "10mH"}
+            onDragEnd={(event) => handleComponentDragEnd(component.id, event)}
+            onSelect={() => handleSelect(component.id)}
+            isSelected={isSelected}
+            onContextMenu={(event) => handleNodeContextMenu(component.id, event)}
+            wireMode={wireMode}
+            onPinPointerDown={(pinId, event) =>
+              handlePinPointerDown(component.id, pinId, event)
+            }
+          />
+        );
       case "voltageSource":
         return (
           <VoltageSourceNode
@@ -719,19 +763,35 @@ export default function MainPage() {
     },
     [wireMode, draftWire, handleSelect]
   );
-  const valueFieldLabel =
-    activeComponent?.type === "resistor"
-      ? "Resistance (Ω)"
-      : activeComponent?.type === "voltageSource"
-        ? "Voltage (V)"
-        : "Value";
+  const valueFieldLabel = (() => {
+    switch (activeComponent?.type) {
+      case "resistor":
+        return "Resistance (Ω)";
+      case "voltageSource":
+        return "Voltage (V)";
+      case "capacitor":
+        return "Capacitance (F)";
+      case "inductor":
+        return "Inductance (H)";
+      default:
+        return "Value";
+    }
+  })();
 
-  const valueFieldPlaceholder =
-    activeComponent?.type === "resistor"
-      ? "Enter resistance"
-      : activeComponent?.type === "voltageSource"
-        ? "Enter voltage"
-        : "Enter value";
+  const valueFieldPlaceholder = (() => {
+    switch (activeComponent?.type) {
+      case "resistor":
+        return "Enter resistance";
+      case "voltageSource":
+        return "Enter voltage";
+      case "capacitor":
+        return "Enter capacitance";
+      case "inductor":
+        return "Enter inductance";
+      default:
+        return "Enter value";
+    }
+  })();
   return (
   <Layout onRunCircuit={handleRunCircuit}>
       <div

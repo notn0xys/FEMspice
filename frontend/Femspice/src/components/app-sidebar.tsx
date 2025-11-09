@@ -1,5 +1,5 @@
 import type { ComponentType, DragEvent } from "react"
-import { Calendar, Home, Inbox, Search, Settings, Zap, Square } from "lucide-react"
+import { Calendar, Home, Inbox, Search, Settings, Zap } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { useWireMode } from "@/context/wire-mode-context"
+import capacitorIcon from "@/assets/componentsIcons/capacitor.png"
+import inductorIcon from "@/assets/componentsIcons/inductor.png"
+import resistorIcon from "@/assets/componentsIcons/Resistor.png"
 
 type AppSidebarProps = {
   onRunCircuit?: () => void
@@ -20,8 +23,9 @@ type AppSidebarProps = {
 type ComponentPaletteItem = {
   title: string
   type: string
-  value: number
+  value?: number
   icon?: ComponentType<{ className?: string }>
+  imageSrc?: string
 }
 
 // Menu items.
@@ -65,7 +69,19 @@ const componentPalette: ComponentPaletteItem[] = [
     title: "Resistor",
     type: "resistor",
     value: 1000,
-    icon: Square,
+    imageSrc: resistorIcon,
+  },
+  {
+    title: "Capacitor",
+    type: "capacitor",
+    value: 1e-6,
+    imageSrc: capacitorIcon,
+  },
+  {
+    title: "Inductor",
+    type: "inductor",
+    value: 0.01,
+    imageSrc: inductorIcon,
   },
 ]
 
@@ -122,11 +138,19 @@ export function AppSidebar({ onRunCircuit }: AppSidebarProps) {
                     >
                       {component.icon ? (
                         <component.icon className="h-4 w-4 shrink-0" />
+                      ) : component.imageSrc ? (
+                        <img
+                          src={component.imageSrc}
+                          alt={`${component.title} icon`}
+                          className="h-5 w-5 shrink-0 object-contain"
+                        />
                       ) : null}
-                      <span>{component.title}</span>
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        {component.value}
-                      </span>
+                      <span className="ml-2 flex-1 text-left">{component.title}</span>
+                      {component.value !== undefined ? (
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          {component.value}
+                        </span>
+                      ) : null}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
