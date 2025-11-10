@@ -16,9 +16,11 @@ import { useState, useEffect } from "react";
 type LayoutProps = {
   children: React.ReactNode;
   onRunCircuit?: () => void;
+  mode?: "dc" | "ac";
+  onModeChange?: (mode: "dc" | "ac") => void;
 };
 
-export default function Layout({ children, onRunCircuit }: LayoutProps) {
+export default function Layout({ children, onRunCircuit, mode, onModeChange }: LayoutProps) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function Layout({ children, onRunCircuit }: LayoutProps) {
         } as React.CSSProperties}
       >
         <div className="flex h-screen w-full">
-          <AppSidebar onRunCircuit={onRunCircuit} />
+          <AppSidebar onRunCircuit={onRunCircuit} mode={mode} onModeChange={onModeChange} />
           <div className="flex flex-col flex-1 overflow-hidden">
             <div className="flex items-center gap-2 p-2 border-b">
                 <SidebarTrigger >

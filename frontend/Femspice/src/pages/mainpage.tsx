@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DragEvent as ReactDragEvent, FormEvent } from "react";
 import Layout from "@/components/layout";
-import { Stage, Layer, Rect , Line} from "react-konva";
+import { Stage, Layer, Rect, Line, Group, Label as KonvaLabel, Tag as KonvaTag, Text as KonvaText } from "react-konva";
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import VoltageSourceNode, {
@@ -76,6 +76,40 @@ type ComponentDraft = {
   rotation: string;
 };
 
+type SimulationApiResponse = {
+  result?: {
+    node_voltages?: Record<string, number | null>;
+    component_currents?: Record<string, number | null>;
+  };
+  mappings?: Record<string, string>;
+};
+
+type SimulationState = {
+  nodeVoltages: Record<string, number>;
+  componentCurrents: Record<string, number | null>;
+  pinToNode: Record<string, string>;
+};
+
+const normalizeNodeName = (node: string) => node.trim().toUpperCase();
+
+const getWireLabelPosition = (points: number[]): { x: number; y: number } | null => {
+  if (points.length < 4) {
+    return null;
+  }
+
+  const x1 = points[0];
+  const y1 = points[1];
+  const x2 = points[points.length - 2];
+  const y2 = points[points.length - 1];
+
+  return {
+    x: (x1 + x2) / 2,
+    y: (y1 + y2) / 2,
+  };
+};
+
+const formatVoltage = (value: number) => `${value.toFixed(3)} V`;
+
 
 export default function MainPage() {
   const stageRef = useRef<Konva.Stage>(null);
@@ -92,6 +126,8 @@ export default function MainPage() {
   });
   const [wires, setWires] = useState<CanvasWire[]>([]);
   const [draftWire, setDraftWire] = useState<CanvasWire | null>(null);
+  const [simulationResult, setSimulationResult] = useState<SimulationState | null>(null);
+  const [circuitMode, setCircuitMode] = useState<"dc" | "ac">("dc");
   const activeComponent = useMemo(
     () => components.find((component) => component.id === inspectorId) ?? null,
     [components, inspectorId],
@@ -434,8 +470,64 @@ export default function MainPage() {
     [handleSelect],
   );
 
-  const handleRunCircuit = useCallback(() => {
+  const applySimulationResult = useCallback((data: SimulationApiResponse) => {
+    const nodeVoltages: Record<string, number> = {};
+    const rawNodeVoltages = data.result?.node_voltages ?? {};
+    Object.entries(rawNodeVoltages).forEach(([node, value]) => {
+      if (typeof value === "number") {
+        nodeVoltages[normalizeNodeName(node)] = value;
+      }
+    });
+
+    const pinToNodeEntries = Object.entries(data.mappings ?? {}).map(
+      ([pinRef, nodeName]) => [pinRef, normalizeNodeName(nodeName)],
+    );
+
+    setSimulationResult({
+      nodeVoltages,
+      componentCurrents: data.result?.component_currents ?? {},
+      pinToNode: Object.fromEntries(pinToNodeEntries),
+    });
+  }, []);
+
+  const wireAnnotations = useMemo(() => {
+    if (!simulationResult) {
+      return new Map<string, number>();
+    }
+
+    const annotations = new Map<string, number>();
+
+    wires.forEach((wire) => {
+      const fromKey = `${wire.from.componentId}:${wire.from.pinId}`;
+      const toKey = `${wire.to.componentId}:${wire.to.pinId}`;
+      const fromNode = simulationResult.pinToNode[fromKey];
+      const toNode = simulationResult.pinToNode[toKey];
+
+      if (!fromNode || fromNode !== toNode) {
+        return;
+      }
+
+      const rawVoltage = simulationResult.nodeVoltages[fromNode];
+      const voltage =
+        typeof rawVoltage === "number"
+          ? rawVoltage
+          : fromNode === "0"
+            ? 0
+            : undefined;
+
+      if (voltage === undefined) {
+        return;
+      }
+
+      annotations.set(wire.id, voltage);
+    });
+
+    return annotations;
+  }, [simulationResult, wires]);
+
+  const handleRunCircuit = useCallback(async () => {
     const payload = {
+      mode: circuitMode,
       components: components.map((component) => ({
         id: component.id,
         type: component.type,
@@ -454,10 +546,31 @@ export default function MainPage() {
       })),
     };
 
-    console.groupCollapsed("[FEMspice] Run circuit payload");
-    console.log(payload);
-    console.groupEnd();
-  }, [components, wires]);
+    setSimulationResult(null);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/simulate/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Simulation request failed (${response.status})`);
+      }
+
+      const data = (await response.json()) as SimulationApiResponse;
+      applySimulationResult(data);
+    } catch (error) {
+      console.groupCollapsed("[FEMspice] Simulation fallback");
+      console.log("Payload", payload);
+      console.warn(
+        "Simulation request failed or endpoint not configured. Using sample response. Replace with real API endpoint when available.",
+      );
+      console.error(error);
+      console.groupEnd();
+    }
+  }, [components, wires, circuitMode, applySimulationResult]);
 
   const handleDraftChange = useCallback(
     (field: keyof ComponentDraft, value: string) => {
@@ -793,7 +906,11 @@ export default function MainPage() {
     }
   })();
   return (
-  <Layout onRunCircuit={handleRunCircuit}>
+    <Layout
+      onRunCircuit={handleRunCircuit}
+      mode={circuitMode}
+      onModeChange={setCircuitMode}
+    >
       <div
         ref={containerRef}
         className="flex-1 h-full"
@@ -825,23 +942,51 @@ export default function MainPage() {
         >
           {/* Render components here */}
           <Layer>
-            {wires.map((wire) => (
-              <Line
-                key={wire.id}
-                points={wire.points}
-                stroke={selectedWireId === wire.id ? "#2563eb" : wire.color ?? "#1f2937"}
-                strokeWidth={selectedWireId === wire.id ? 4 : 2}
-                lineCap="round"
-                lineJoin="round"
-                onMouseDown={(event) => {
-                  event.cancelBubble = true;          // don’t let Stage clear it
-                  setSelectedWireId(wire.id);
-                  setSelectedId(null);
-                  setInspectorId(null);
-                }}
-              />
+            {wires.map((wire) => {
+              const annotation = wireAnnotations.get(wire.id);
+              const labelPosition =
+                annotation !== undefined
+                  ? getWireLabelPosition(wire.points)
+                  : null;
 
-            ))}
+              return (
+                <Group key={wire.id}>
+                  <Line
+                    points={wire.points}
+                    stroke={selectedWireId === wire.id ? "#2563eb" : wire.color ?? "#1f2937"}
+                    strokeWidth={selectedWireId === wire.id ? 4 : 2}
+                    lineCap="round"
+                    lineJoin="round"
+                    onMouseDown={(event) => {
+                      event.cancelBubble = true;          // don’t let Stage clear it
+                      setSelectedWireId(wire.id);
+                      setSelectedId(null);
+                      setInspectorId(null);
+                    }}
+                  />
+                  {annotation !== undefined && labelPosition ? (
+                    <KonvaLabel
+                      x={labelPosition.x}
+                      y={labelPosition.y - 18}
+                      listening={false}
+                    >
+                      <KonvaTag
+                        fill="rgba(15,23,42,0.85)"
+                        stroke="rgba(148,163,184,0.6)"
+                        strokeWidth={1}
+                        cornerRadius={4}
+                      />
+                      <KonvaText
+                        text={formatVoltage(annotation)}
+                        fill="#f8fafc"
+                        fontSize={12}
+                        padding={4}
+                      />
+                    </KonvaLabel>
+                  ) : null}
+                </Group>
+              );
+            })}
             {draftWire && (
               <Line
                 points={draftWire.points}

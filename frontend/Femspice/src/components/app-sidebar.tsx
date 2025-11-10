@@ -18,6 +18,8 @@ import resistorIcon from "@/assets/componentsIcons/Resistor.png"
 
 type AppSidebarProps = {
   onRunCircuit?: () => void
+  mode?: "dc" | "ac"
+  onModeChange?: (mode: "dc" | "ac") => void
 }
 
 type ComponentPaletteItem = {
@@ -85,7 +87,7 @@ const componentPalette: ComponentPaletteItem[] = [
   },
 ]
 
-export function AppSidebar({ onRunCircuit }: AppSidebarProps) {
+export function AppSidebar({ onRunCircuit, mode = "dc", onModeChange }: AppSidebarProps) {
   const { wireMode, toggleWireMode } = useWireMode();
 
   const handleDragStart = (
@@ -129,6 +131,20 @@ export function AppSidebar({ onRunCircuit }: AppSidebarProps) {
               >
                 {wireMode ? "Wire Mode: On" : "Wire Mode: Off"}
               </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant={mode === "dc" ? "default" : "outline"}
+                  onClick={() => onModeChange?.("dc")}
+                >
+                  DC Mode
+                </Button>
+                <Button
+                  variant={mode === "ac" ? "default" : "outline"}
+                  onClick={() => onModeChange?.("ac")}
+                >
+                  AC Mode
+                </Button>
+              </div>
               <SidebarMenu>
                 {componentPalette.map((component) => (
                   <SidebarMenuItem key={component.type}>
