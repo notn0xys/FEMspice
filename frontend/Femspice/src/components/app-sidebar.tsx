@@ -23,6 +23,7 @@ type AppSidebarProps = {
   onRunCircuit?: () => void
   mode?: "dc" | "ac"
   onModeChange?: (mode: "dc" | "ac") => void
+  onSaveCircuit?: () => void
 }
 
 type ComponentPaletteItem = {
@@ -90,7 +91,7 @@ const componentPalette: ComponentPaletteItem[] = [
   },
 ]
 
-export function AppSidebar({ onRunCircuit, mode = "dc", onModeChange }: AppSidebarProps) {
+export function AppSidebar({ onSaveCircuit,onRunCircuit, mode = "dc", onModeChange }: AppSidebarProps) {
   const [displayName, setDisplayName] = useState("User");
   useEffect(() => {
     const storedName = localStorage.getItem("sub");
@@ -181,11 +182,19 @@ export function AppSidebar({ onRunCircuit, mode = "dc", onModeChange }: AppSideb
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
-              {onRunCircuit ? (
+              <div className="gap-2 flex flex-col">
+                {onRunCircuit ? (
                 <Button className="w-full" onClick={onRunCircuit}>
                   Run Circuit
                 </Button>
               ) : null}
+              {onSaveCircuit ? (
+                <Button className="w-full" variant="secondary" onClick={onSaveCircuit}>
+                  Save Circuit
+                </Button>
+              ) : null}
+              </div>
+              
             </div>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useWireMode } from "@/context/wire-mode-context";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 const DRAG_DATA_MIME = "application/femspice-component";
 
 
@@ -122,6 +123,14 @@ export default function MainPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [inspectorId, setInspectorId] = useState<string | null>(null);
   const [selectedWireId, setSelectedWireId] = useState<string | null>(null);
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveDescription, setSaveDescription] = useState("");
+  const openSaveDialog = useCallback(() => {
+    setSaveName("");
+    setIsSaveDialogOpen(true);
+  }, []);
   const [draft, setDraft] = useState<ComponentDraft>({
     title: "",
     value: "",
@@ -922,6 +931,44 @@ export default function MainPage() {
         );
     }
   }
+  async function handleConfirmSave() {
+    setInspectorId(null);
+    setSelectedId(null);
+    setIsSaveDialogOpen(false);
+    setIsSaving(true);
+    console.log("Saving circuit as:", saveName);
+    const trimmedName = saveName.trim();
+    const trimmedDescription = saveDescription.trim();
+    if (trimmedName === "" ) {
+      console.error("Save name cannot be empty");
+      setIsSaving(false);
+      return;
+    }
+    const payload = {
+      name: saveName,
+      description: trimmedDescription,
+      components: components,
+      wires: wires,
+    };
+    console.log("Save payload:", payload);
+    setIsSaving(false);
+    try {
+      const response = await fetch("http://127.0.0.1:8000/simulate/test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to save circuit");
+      }
+      const data = await response.json();
+      console.log("Save successful:", data);
+    } catch (error) {
+      console.error("Error saving circuit:", error);
+    }
+  }
   const handleStagePointerDown = useCallback(
     (event: KonvaEventObject<PointerEvent>) => {
       const stage = event.target.getStage();
@@ -989,6 +1036,7 @@ export default function MainPage() {
       onRunCircuit={handleRunCircuit}
       mode={circuitMode}
       onModeChange={setCircuitMode}
+      onSaveCircuit={openSaveDialog}
     >
       <div
         ref={containerRef}
@@ -1163,6 +1211,32 @@ export default function MainPage() {
           ) : null}
         </Stage>
       </div>
+      <Dialog
+        open={isSaveDialogOpen}
+        onOpenChange={setIsSaveDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+            <DialogTitle>Save Circuit</DialogTitle>
+          </DialogHeader>
+            <DialogDescription>
+              Enter a name for your circuit to save it.
+            </DialogDescription>
+          <Input autoFocus placeholder="Circuit Name" value={saveName} onChange={(e) => setSaveName(e.target.value)} />
+          <DialogDescription className="mt-4">
+            Enter a description for your circuit (optional).
+          </DialogDescription>
+          <Input placeholder="Circuit Description" value={saveDescription} onChange={(e) => setSaveDescription(e.target.value)} />
+          <DialogFooter>
+            <DialogClose asChild> 
+              <Button>Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleConfirmSave} disabled={isSaving || !saveName.trim()}>
+              {isSaving ? "Saving…" : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       <Sheet
         open={Boolean(inspectorId)}
         onOpenChange={(open) => {
