@@ -17,7 +17,7 @@ import { motion } from "framer-motion";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 // import { register } from "module";
-
+import { jwtDecode } from "jwt-decode";
 export default function Signup() {
   
   const [username, setUsername] = useState("")
@@ -54,7 +54,11 @@ export default function Signup() {
       const responseData = await response.json();
       console.log('Success: ', responseData);
 
+      const decodedToken: any = jwtDecode(responseData.access_token);
+      console.log('Decoded Token: ', decodedToken);
+      localStorage.setItem("sub", decodedToken.sub);
       localStorage.setItem("token", responseData.access_token);
+
       navigate("/home")
     } catch (error) {
       console.error('Error: ', error)
