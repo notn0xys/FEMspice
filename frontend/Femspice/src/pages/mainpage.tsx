@@ -931,44 +931,74 @@ export default function MainPage() {
         );
     }
   }
-  async function handleConfirmSave() {
-    setInspectorId(null);
-    setSelectedId(null);
-    setIsSaveDialogOpen(false);
-    setIsSaving(true);
-    console.log("Saving circuit as:", saveName);
+  const handleConfirmSave = useCallback(async () => {
     const trimmedName = saveName.trim();
     const trimmedDescription = saveDescription.trim();
-    if (trimmedName === "" ) {
+
+    if (trimmedName === "") {
       console.error("Save name cannot be empty");
-      setIsSaving(false);
       return;
     }
+
+    const serializedComponents = components.map((component) => ({
+      id: component.id,
+      type: component.type,
+      x: component.x,
+      y: component.y,
+      rotation: component.rotation,
+      value: component.value ?? null,
+      title: component.title ?? null,
+      connections: component.connections,
+    }));
+
+    const serializedWires = wires.map((wire) => ({
+      id: wire.id,
+      from_: wire.from,
+      to: wire.to,
+      points: wire.points,
+      color: wire.color ?? null,
+    }));
+
     const payload = {
-      name: saveName,
+      name: trimmedName,
       description: trimmedDescription,
-      components: components,
-      wires: wires,
+      mode: circuitMode,
+      components: serializedComponents,
+      wires: serializedWires,
     };
-    console.log("Save payload:", payload);
-    setIsSaving(false);
+
+    const token = localStorage.getItem("token");
+
+    setIsSaving(true);
+
     try {
-      const response = await fetch("http://127.0.0.1:8000/simulate/test", {
+      const response = await fetch("http://127.0.0.1:8000/simulate/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });
+
       if (!response.ok) {
-        throw new Error("Failed to save circuit");
+        throw new Error(`Failed to save circuit (${response.status})`);
       }
+
       const data = await response.json();
       console.log("Save successful:", data);
+
+      setIsSaveDialogOpen(false);
+      setSaveDescription("");
+      setSaveName("");
+      setSelectedId(null);
+      setInspectorId(null);
     } catch (error) {
       console.error("Error saving circuit:", error);
+    } finally {
+      setIsSaving(false);
     }
-  }
+  }, [circuitMode, components, saveDescription, saveName, wires]);
   const handleStagePointerDown = useCallback(
     (event: KonvaEventObject<PointerEvent>) => {
       const stage = event.target.getStage();
