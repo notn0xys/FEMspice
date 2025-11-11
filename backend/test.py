@@ -5,25 +5,25 @@ from PySpice.Unit import *
 import matplotlib.pyplot as plt
 
 
-logger = Logging.setup_logging()
+# logger = Logging.setup_logging()
 
-circuit = Circuit('Resistor Bridge')
+# circuit = Circuit('Resistor Bridge')
 
-circuit.V('input', 1, circuit.gnd, 10@u_V)
-circuit.R('R1', 1, 2, 2@u_kΩ)
-circuit.R('R2', 1, 3, 1@u_kΩ)
-circuit.R(3, 2, circuit.gnd, 1@u_kΩ)
-circuit.R(4, 3, circuit.gnd, 2@u_kΩ)
-circuit.R(5, 3, 2, 2@u_kΩ)
+# circuit.V('input', 1, circuit.gnd, 10@u_V)
+# circuit.R('R1', 1, 2, 2@u_kΩ)
+# circuit.R('R2', 1, 3, 1@u_kΩ)
+# circuit.R(3, 2, circuit.gnd, 1@u_kΩ)
+# circuit.R(4, 3, circuit.gnd, 2@u_kΩ)
+# circuit.R(5, 3, 2, 2@u_kΩ)
 
-simulator = circuit.simulator(temperature=25, nominal_temperature=25)
-analysis = simulator.operating_point()
+# simulator = circuit.simulator(temperature=25, nominal_temperature=25)
+# analysis = simulator.operating_point()
 
-for node in analysis.nodes.values():
-    print('Node {}: {:4.1f} V'.format(str(node), node.item()))
-    # fuck you
-print(f"{-float(analysis.branches['vinput'][0]):.3e} A")
-print(len(analysis.branches))
+# for node in analysis.nodes.values():
+#     print('Node {}: {:4.1f} V'.format(str(node), node.item()))
+#     # fuck you
+# print(f"{-float(analysis.branches['vinput'][0]):.3e} A")
+# print(len(analysis.branches))
 
 ## -- SWEEP SOURCE
 
