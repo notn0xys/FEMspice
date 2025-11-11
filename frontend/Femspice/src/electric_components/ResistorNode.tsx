@@ -17,9 +17,9 @@ interface ResistorNodeProps {
 }
 
 const RESISTOR_WIDTH = 80;
-const RESISTOR_HEIGHT = 20;
+const RESISTOR_HEIGHT = 25;
 const RESISTOR_LEAD_LENGTH = 20;
-const RESISTOR_ICON_MARGIN = 6;
+const RESISTOR_ICON_MARGIN = 4;
 
 export const RESISTOR_PIN_OFFSETS = {
   left: { x: -RESISTOR_WIDTH / 2 - RESISTOR_LEAD_LENGTH, y: 0 },

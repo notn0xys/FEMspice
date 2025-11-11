@@ -1,5 +1,5 @@
 import type { ComponentType, DragEvent } from "react"
-import { Calendar, Home, Inbox, Search, Settings, Zap } from "lucide-react"
+import { Settings, Zap } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +24,7 @@ type AppSidebarProps = {
   mode?: "dc" | "ac"
   onModeChange?: (mode: "dc" | "ac") => void
   onSaveCircuit?: () => void
+  onClearCircuit?: () => void
 }
 
 type ComponentPaletteItem = {
@@ -34,34 +35,7 @@ type ComponentPaletteItem = {
   imageSrc?: string
 }
 
-// Menu items.
-const items = [
-  {
-    title: "Home",
-    url: "#",
-    icon: Home,
-  },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-]
+
 
 
 const componentPalette: ComponentPaletteItem[] = [
@@ -89,9 +63,14 @@ const componentPalette: ComponentPaletteItem[] = [
     value: 0.01,
     imageSrc: inductorIcon,
   },
+  {
+    title: "Ground",
+    type: "ground",
+    icon: Settings,
+  },
 ]
 
-export function AppSidebar({ onSaveCircuit,onRunCircuit, mode = "dc", onModeChange }: AppSidebarProps) {
+export function AppSidebar({ onSaveCircuit, onClearCircuit, onRunCircuit, mode = "dc", onModeChange }: AppSidebarProps) {
   const [displayName, setDisplayName] = useState("User");
   useEffect(() => {
     const storedName = localStorage.getItem("sub");
@@ -115,23 +94,6 @@ export function AppSidebar({ onSaveCircuit,onRunCircuit, mode = "dc", onModeChan
   return (
     <Sidebar>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Components</SidebarGroupLabel>
           <SidebarGroupContent className="overflow-y-auto gap-4 p-2">
@@ -191,6 +153,11 @@ export function AppSidebar({ onSaveCircuit,onRunCircuit, mode = "dc", onModeChan
               {onSaveCircuit ? (
                 <Button className="w-full" variant="secondary" onClick={onSaveCircuit}>
                   Save Circuit
+                </Button>
+              ) : null}
+              {onClearCircuit ? (
+                <Button className="w-full" variant="destructive" onClick={onClearCircuit}>
+                  Clear All
                 </Button>
               ) : null}
               </div>

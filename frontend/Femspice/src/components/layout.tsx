@@ -19,9 +19,10 @@ type LayoutProps = {
   mode?: "dc" | "ac";
   onModeChange?: (mode: "dc" | "ac") => void;
   onSaveCircuit?: () => void;
+  onClearCircuit?: () => void;
 };
 
-export default function Layout({onSaveCircuit, children, onRunCircuit, mode, onModeChange }: LayoutProps) {
+export default function Layout({onSaveCircuit, onClearCircuit, children, onRunCircuit, mode, onModeChange }: LayoutProps) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function Layout({onSaveCircuit, children, onRunCircuit, mode, onM
         } as React.CSSProperties}
       >
         <div className="flex h-screen w-full">
-          <AppSidebar onRunCircuit={onRunCircuit} mode={mode} onModeChange={onModeChange} onSaveCircuit={onSaveCircuit}/>
+          <AppSidebar onRunCircuit={onRunCircuit} mode={mode} onModeChange={onModeChange} onSaveCircuit={onSaveCircuit} onClearCircuit={onClearCircuit}/>
           <div className="flex flex-col flex-1 overflow-hidden">
             <div className="flex items-center gap-2 p-2 border-b">
                 <SidebarTrigger >

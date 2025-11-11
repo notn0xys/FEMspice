@@ -17,6 +17,9 @@ import CapacitorNode, {
 import InductorNode, {
   INDUCTOR_PIN_OFFSETS,
 } from "@/electric_components/InductorNode";
+import GroundNode, {
+  GROUND_PIN_OFFSETS,
+} from "@/electric_components/GroundNode";
 import {
   Sheet,
   SheetContent,
@@ -37,6 +40,7 @@ const PIN_DEFINITIONS = {
   voltageSource: VOLTAGE_SOURCE_PIN_OFFSETS,
   capacitor: CAPACITOR_PIN_OFFSETS,
   inductor: INDUCTOR_PIN_OFFSETS,
+  ground: GROUND_PIN_OFFSETS,
 } as const;
 
 const isSupportedComponentType = (type: string): type is ComponentType =>
@@ -909,6 +913,24 @@ export default function MainPage() {
             }
           />
         );
+      case "ground":
+        return (
+          <GroundNode
+            key={component.id}
+            x={component.x}
+            y={component.y}
+            rotation={component.rotation}
+            label={component.title ?? "GND"}
+            onDragEnd={(event) => handleComponentDragEnd(component.id, event)}
+            onSelect={() => handleSelect(component.id)}
+            isSelected={isSelected}
+            onContextMenu={(event) => handleNodeContextMenu(component.id, event)}
+            wireMode={wireMode}
+            onPinPointerDown={(pinId, event) =>
+              handlePinPointerDown(component.id, pinId, event)
+            }
+          />
+        );
       default:
         return (
           <Rect
@@ -999,6 +1021,24 @@ export default function MainPage() {
       setIsSaving(false);
     }
   }, [circuitMode, components, saveDescription, saveName, wires]);
+
+  const handleClearCircuit = useCallback(() => {
+    setComponents([]);
+    setWires([]);
+    setDraftWire(null);
+    setSelectedId(null);
+    setSelectedWireId(null);
+    setInspectorId(null);
+    setSimulationResult(null);
+    setDraft({ title: "", value: "", rotation: "0" });
+    setSaveName("");
+    setSaveDescription("");
+    setIsSaveDialogOpen(false);
+    setIsSaving(false);
+    if (wireMode) {
+      toggleWireMode();
+    }
+  }, [wireMode, toggleWireMode]);
   const handleStagePointerDown = useCallback(
     (event: KonvaEventObject<PointerEvent>) => {
       const stage = event.target.getStage();
@@ -1067,6 +1107,7 @@ export default function MainPage() {
       mode={circuitMode}
       onModeChange={setCircuitMode}
       onSaveCircuit={openSaveDialog}
+      onClearCircuit={handleClearCircuit}
     >
       <div
         ref={containerRef}

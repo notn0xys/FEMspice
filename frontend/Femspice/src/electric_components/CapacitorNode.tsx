@@ -23,8 +23,8 @@ interface CapacitorNodeProps {
 }
 
 const CAPACITOR_WIDTH = 80;
-const CAPACITOR_HEIGHT = 36;
-const CAPACITOR_LEAD_LENGTH = 18;
+const CAPACITOR_HEIGHT = 25;
+const CAPACITOR_LEAD_LENGTH = 20;
 
 export const CAPACITOR_PIN_OFFSETS = {
   left: { x: -CAPACITOR_WIDTH / 2 - CAPACITOR_LEAD_LENGTH, y: 0 },

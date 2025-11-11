@@ -23,8 +23,8 @@ interface InductorNodeProps {
 }
 
 const INDUCTOR_WIDTH = 80;
-const INDUCTOR_HEIGHT = 36;
-const INDUCTOR_LEAD_LENGTH = 18;
+const INDUCTOR_HEIGHT = 25;
+const INDUCTOR_LEAD_LENGTH = 20;
 
 export const INDUCTOR_PIN_OFFSETS = {
   left: { x: -INDUCTOR_WIDTH / 2 - INDUCTOR_LEAD_LENGTH, y: 0 },
