@@ -205,7 +205,7 @@ function CreationsTab({
           {circuitList.map((circuit) => (
             <li
               key={circuit.id}
-              onClick={() => navigate(`/main/?id=${circuit.id}`)}
+              onClick={() => navigate(`/home?id=${circuit.id}`)}
               className="p-4 border border-gray-200 dark:border-gray-700 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
               <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400">
