@@ -1,4 +1,4 @@
-from model.circuit import Component
+from model.circuit import SimComponent
 from collections import defaultdict
 
 def convert_frontend_to_netlist(frontend_data):
@@ -70,7 +70,7 @@ def convert_frontend_to_netlist(frontend_data):
         comp_name = f"{comp_type}{type_counters[comp_type]}"
         comp_mapping[comp["id"]] = comp_name
 
-        parsed_components.append(Component(
+        parsed_components.append(SimComponent(
             type=comp_type,
             name=comp_name,
             node1=node1,
