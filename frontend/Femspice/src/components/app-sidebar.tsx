@@ -3,6 +3,7 @@ import { Calendar, Home, Inbox, Search, Settings, Zap } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -15,7 +16,9 @@ import { useWireMode } from "@/context/wire-mode-context"
 import capacitorIcon from "@/assets/componentsIcons/capacitor.png"
 import inductorIcon from "@/assets/componentsIcons/inductor.png"
 import resistorIcon from "@/assets/componentsIcons/Resistor.png"
-
+import{ Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 type AppSidebarProps = {
   onRunCircuit?: () => void
   mode?: "dc" | "ac"
@@ -88,6 +91,13 @@ const componentPalette: ComponentPaletteItem[] = [
 ]
 
 export function AppSidebar({ onRunCircuit, mode = "dc", onModeChange }: AppSidebarProps) {
+  const [displayName, setDisplayName] = useState("User");
+  useEffect(() => {
+    const storedName = localStorage.getItem("sub");
+    if (storedName) {
+      setDisplayName(storedName);
+    }
+  }, []);
   const { wireMode, toggleWireMode } = useWireMode();
 
   const handleDragStart = (
@@ -180,6 +190,20 @@ export function AppSidebar({ onRunCircuit, mode = "dc", onModeChange }: AppSideb
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <div className="flex items-center gap-3">
+          <Link to="/profile">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${displayName}`} alt={displayName} />
+              <AvatarFallback>{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+          </Link>
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">Hi,</p>
+            <p className="truncate text-sm font-medium">{displayName}</p>
+          </div>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   )
 }

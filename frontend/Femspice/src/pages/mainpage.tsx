@@ -82,12 +82,14 @@ type SimulationApiResponse = {
     component_currents?: Record<string, number | null>;
   };
   mappings?: Record<string, string>;
+  components_mapping?: Record<string, string>;
 };
 
 type SimulationState = {
   nodeVoltages: Record<string, number>;
   componentCurrents: Record<string, number | null>;
   pinToNode: Record<string, string>;
+  componentMapping: Record<string, string>;
 };
 
 const normalizeNodeName = (node: string) => node.trim().toUpperCase();
@@ -109,6 +111,7 @@ const getWireLabelPosition = (points: number[]): { x: number; y: number } | null
 };
 
 const formatVoltage = (value: number) => `${value.toFixed(3)} V`;
+const formatCurrent = (value: number) => `${value.toFixed(3)} A`;
 
 
 export default function MainPage() {
@@ -128,6 +131,7 @@ export default function MainPage() {
   const [draftWire, setDraftWire] = useState<CanvasWire | null>(null);
   const [simulationResult, setSimulationResult] = useState<SimulationState | null>(null);
   const [circuitMode, setCircuitMode] = useState<"dc" | "ac">("dc");
+  const [measurementMode, setMeasurementMode] = useState<"voltage" | "current">("voltage");
   const activeComponent = useMemo(
     () => components.find((component) => component.id === inspectorId) ?? null,
     [components, inspectorId],
@@ -487,11 +491,12 @@ export default function MainPage() {
       nodeVoltages,
       componentCurrents: data.result?.component_currents ?? {},
       pinToNode: Object.fromEntries(pinToNodeEntries),
+      componentMapping: data.components_mapping ?? {},
     });
   }, []);
 
   const wireAnnotations = useMemo(() => {
-    if (!simulationResult) {
+    if (!simulationResult || measurementMode !== "voltage") {
       return new Map<string, number>();
     }
 
@@ -523,7 +528,31 @@ export default function MainPage() {
     });
 
     return annotations;
-  }, [simulationResult, wires]);
+  }, [simulationResult, wires, measurementMode]);
+
+  const componentCurrentAnnotations = useMemo(() => {
+    if (!simulationResult || measurementMode !== "current") {
+      return new Map<string, number>();
+    }
+
+    const annotations = new Map<string, number>();
+
+    components.forEach((component) => {
+      const spiceName = simulationResult.componentMapping[component.id];
+      if (!spiceName) {
+        return;
+      }
+
+      const current = simulationResult.componentCurrents[spiceName];
+      if (current === null || current === undefined) {
+        return;
+      }
+
+      annotations.set(component.id, current);
+    });
+
+    return annotations;
+  }, [components, measurementMode, simulationResult]);
 
   const handleRunCircuit = useCallback(async () => {
     const payload = {
@@ -561,6 +590,7 @@ export default function MainPage() {
 
       const data = (await response.json()) as SimulationApiResponse;
       applySimulationResult(data);
+      console.log(data);
     } catch (error) {
       console.groupCollapsed("[FEMspice] Simulation fallback");
       console.log("Payload", payload);
@@ -736,6 +766,55 @@ export default function MainPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedId, rotateSelected]);
+
+  useEffect(() => {
+    if (!selectedId) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Backspace" && event.key !== "Delete") {
+        return;
+      }
+
+      event.preventDefault();
+
+      setComponents((prevComponents) =>
+        prevComponents
+          .filter((component) => component.id !== selectedId)
+          .map((component) => {
+            const updatedConnections = Object.fromEntries(
+              Object.entries(component.connections).map(([pin, targets]) => {
+                const filtered = targets.filter((id) => id !== selectedId);
+                return filtered.length > 0 ? [pin, filtered] : [pin, []];
+              })
+            );
+
+            Object.keys(updatedConnections).forEach((pin) => {
+              if (updatedConnections[pin]?.length === 0) {
+                delete updatedConnections[pin];
+              }
+            });
+
+            return { ...component, connections: updatedConnections };
+          })
+      );
+
+      setWires((prevWires) =>
+        prevWires.filter(
+          (wire) =>
+            wire.from.componentId !== selectedId &&
+            wire.to.componentId !== selectedId
+        )
+      );
+
+      setSelectedId(null);
+      setInspectorId(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedId]);
 
   const handleNodeContextMenu = useCallback(
     (componentId: string, event: KonvaEventObject<PointerEvent>) => {
@@ -913,10 +992,28 @@ export default function MainPage() {
     >
       <div
         ref={containerRef}
-        className="flex-1 h-full"
+        className="relative flex-1 h-full"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
+        <div className="absolute top-4 right-4 z-10 flex gap-2">
+          <Button
+            variant={measurementMode === "voltage" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setMeasurementMode("voltage")}
+            disabled={!simulationResult}
+          >
+            Voltage
+          </Button>
+          <Button
+            variant={measurementMode === "current" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setMeasurementMode("current")}
+            disabled={!simulationResult}
+          >
+            Current
+          </Button>
+        </div>
         <Stage
           ref={stageRef}
           width={stageSize.width}
@@ -941,66 +1038,129 @@ export default function MainPage() {
           onPointerDown={handleStagePointerDown}
         >
           {/* Render components here */}
-          <Layer>
-            {wires.map((wire) => {
-              const annotation = wireAnnotations.get(wire.id);
-              const labelPosition =
-                annotation !== undefined
-                  ? getWireLabelPosition(wire.points)
-                  : null;
+          {measurementMode === "voltage" ? (
+            <Layer>
+              {wires.map((wire) => {
+                const annotation = wireAnnotations.get(wire.id);
+                const labelPosition =
+                  annotation !== undefined
+                    ? getWireLabelPosition(wire.points)
+                    : null;
 
-              return (
-                <Group key={wire.id}>
-                  <Line
-                    points={wire.points}
-                    stroke={selectedWireId === wire.id ? "#2563eb" : wire.color ?? "#1f2937"}
-                    strokeWidth={selectedWireId === wire.id ? 4 : 2}
-                    lineCap="round"
-                    lineJoin="round"
-                    onMouseDown={(event) => {
-                      event.cancelBubble = true;          // don’t let Stage clear it
-                      setSelectedWireId(wire.id);
-                      setSelectedId(null);
-                      setInspectorId(null);
-                    }}
-                  />
-                  {annotation !== undefined && labelPosition ? (
-                    <KonvaLabel
-                      x={labelPosition.x}
-                      y={labelPosition.y - 18}
-                      listening={false}
-                    >
-                      <KonvaTag
-                        fill="rgba(15,23,42,0.85)"
-                        stroke="rgba(148,163,184,0.6)"
-                        strokeWidth={1}
-                        cornerRadius={4}
-                      />
-                      <KonvaText
-                        text={formatVoltage(annotation)}
-                        fill="#f8fafc"
-                        fontSize={12}
-                        padding={4}
-                      />
-                    </KonvaLabel>
-                  ) : null}
-                </Group>
-              );
-            })}
-            {draftWire && (
-              <Line
-                points={draftWire.points}
-                stroke={draftWire.color || "#3b82f6"}
-                strokeWidth={3}
-                dash={[8, 8]}
-                lineCap="round"
-                lineJoin="round"
-              />
-            )}
-          </Layer>
+                return (
+                  <Group key={wire.id}>
+                    <Line
+                      points={wire.points}
+                      stroke={selectedWireId === wire.id ? "#2563eb" : wire.color ?? "#1f2937"}
+                      strokeWidth={selectedWireId === wire.id ? 4 : 2}
+                      lineCap="round"
+                      lineJoin="round"
+                      onMouseDown={(event) => {
+                        event.cancelBubble = true;          // don’t let Stage clear it
+                        setSelectedWireId(wire.id);
+                        setSelectedId(null);
+                        setInspectorId(null);
+                      }}
+                    />
+                    {annotation !== undefined && labelPosition ? (
+                      <KonvaLabel
+                        x={labelPosition.x}
+                        y={labelPosition.y - 18}
+                        listening={false}
+                      >
+                        <KonvaTag
+                          fill="rgba(15,23,42,0.85)"
+                          stroke="rgba(148,163,184,0.6)"
+                          strokeWidth={1}
+                          cornerRadius={4}
+                        />
+                        <KonvaText
+                          text={formatVoltage(annotation)}
+                          fill="#f8fafc"
+                          fontSize={12}
+                          padding={4}
+                        />
+                      </KonvaLabel>
+                    ) : null}
+                  </Group>
+                );
+              })}
+              {draftWire && (
+                <Line
+                  points={draftWire.points}
+                  stroke={draftWire.color || "#3b82f6"}
+                  strokeWidth={3}
+                  dash={[8, 8]}
+                  lineCap="round"
+                  lineJoin="round"
+                />
+              )}
+            </Layer>
+          ) : (
+            <Layer>
+              {wires.map((wire) => (
+                <Line
+                  key={wire.id}
+                  points={wire.points}
+                  stroke={selectedWireId === wire.id ? "#2563eb" : wire.color ?? "#1f2937"}
+                  strokeWidth={selectedWireId === wire.id ? 4 : 2}
+                  lineCap="round"
+                  lineJoin="round"
+                  onMouseDown={(event) => {
+                    event.cancelBubble = true;
+                    setSelectedWireId(wire.id);
+                    setSelectedId(null);
+                    setInspectorId(null);
+                  }}
+                />
+              ))}
+              {draftWire && (
+                <Line
+                  points={draftWire.points}
+                  stroke={draftWire.color || "#3b82f6"}
+                  strokeWidth={3}
+                  dash={[8, 8]}
+                  lineCap="round"
+                  lineJoin="round"
+                />
+              )}
+            </Layer>
+          )}
           <Layer>
             {components.map((component) => renderComponent(component))}
           </Layer>
+          {measurementMode === "current" ? (
+            <Layer listening={false}>
+              {components.map((component) => {
+                const current = componentCurrentAnnotations.get(component.id);
+                if (current === undefined) {
+                  return null;
+                }
+
+                return (
+                  <KonvaLabel
+                    key={`${component.id}-current`}
+                    x={component.x - 40}
+                    y={component.y - 50}
+                    listening={false}
+                  >
+                    <KonvaTag
+                      fill="rgba(15,23,42,0.85)"
+                      stroke="rgba(148,163,184,0.6)"
+                      strokeWidth={1}
+                      cornerRadius={4}
+                    />
+                    <KonvaText
+                      text={formatCurrent(current)}
+                      fill="#f8fafc"
+                      fontSize={12}
+                      padding={4}
+                    />
+                  </KonvaLabel>
+                );
+              })}
+            </Layer>
+          ) : null}
         </Stage>
       </div>
       <Sheet
