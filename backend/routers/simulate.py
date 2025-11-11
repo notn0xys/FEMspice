@@ -71,17 +71,17 @@ async def list_circuits(current_user: Annotated[UserPublic, Depends(get_current_
     return {"circuits": circuit_list}
 
 
-# @router.get("/load/{circuit_id}", status_code=status.HTTP_200_OK)
-# async def load_circuit(circuit_id: str, current_user: Annotated[UserPublic, Depends(get_current_user)]):
-#     simulation_doc = simulations_collection.find_one({"_id": ObjectId(circuit_id), "user_id": ObjectId(current_user["id"])})
+@router.get("/load/{circuit_id}", status_code=status.HTTP_200_OK)
+async def load_circuit(circuit_id: str, current_user: Annotated[UserPublic, Depends(get_current_user)]):
+    simulation_doc = simulations_collection.find_one({"_id": ObjectId(circuit_id), "user_id": ObjectId(current_user["id"])})
 
-#     if not simulation_doc:
-#         raise HTTPException(status_code=404, detail="Circuit not found")
+    if not simulation_doc:
+        raise HTTPException(status_code=404, detail="Circuit not found")
 
-#     simulation_doc["id"] = str(simulation_doc["_id"])
-#     del simulation_doc["_id"]
-#     del simulation_doc["user_id"]
-#     del simulation_doc["created_at"]
+    simulation_doc["id"] = str(simulation_doc["_id"])
+    del simulation_doc["_id"]
+    del simulation_doc["user_id"]
+    del simulation_doc["created_at"]
 
-#     return simulation_doc
+    return simulation_doc
     
