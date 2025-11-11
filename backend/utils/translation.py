@@ -33,12 +33,23 @@ def convert_frontend_to_netlist(frontend_data):
 
     # Step 2: assign names to each net (N1, N2, ...)
     net_name_map = {}
+    ground_nets = set()
+
     for i, net in enumerate(nets, start=1):
-        name = "0" if any("bottom" in pin for pin in net) else f"N{i}"
+        # Default name
+        name = f"N{i}"
+        # If any pin in this net is ground, force name to "0"
+        if any(pin in ground_nets for pin in net):
+            name = "0"
+
+        # Map each pin to that name
         for pin in net:
             net_name_map[pin] = name
     
     #print(net_name_map)
+    if not ground_nets:
+        print("NO GROUND FOUND")
+        raise ValueError("No ground found in circuit — please add one before simulation.")
 
     # Step 3: build simplified component list
     parsed_components = []
