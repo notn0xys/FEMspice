@@ -32,6 +32,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useWireMode } from "@/context/wire-mode-context";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import { useSearchParams } from "react-router-dom";
+
 const DRAG_DATA_MIME = "application/femspice-component";
 
 
@@ -131,10 +133,12 @@ export default function MainPage() {
   const [saveName, setSaveName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveDescription, setSaveDescription] = useState("");
+  const [searchParams] = useSearchParams();
   const openSaveDialog = useCallback(() => {
     setSaveName("");
     setIsSaveDialogOpen(true);
   }, []);
+  const hasLoadedRef = useRef(false);
   const [draft, setDraft] = useState<ComponentDraft>({
     title: "",
     value: "",
@@ -167,7 +171,44 @@ export default function MainPage() {
       window.removeEventListener("resize", updateStageSize);
     };
   }, []);
+  useEffect(() => { 
+    const id = searchParams.get("id");
+    if (!id || hasLoadedRef.current) {
+      return;
+    }
 
+    hasLoadedRef.current = true;
+    const fetchCircuit = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/simulate/load/${id}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Loaded circuit data:", data);
+        setComponents(data.components || []);
+        const normalizedWires: CanvasWire[] = (data.wires ?? []).map((wire: any) => {
+        const { from_, ...rest } = wire;
+          return {
+            ...rest,
+            from: from_,
+            color: wire.color ?? "#1f2937",
+          };
+        });
+        setWires(normalizedWires);
+      } catch (error) {
+        console.error("Error loading circuit:", error);
+      }
+    };
+
+    fetchCircuit();
+  }, []);
   useEffect(() => {
     if (!activeComponent) {
       if (inspectorId) {
