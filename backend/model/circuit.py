@@ -1,8 +1,7 @@
 from pydantic import BaseModel
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
-
-class Component(BaseModel):
+class SimComponent(BaseModel):
     type: str         # "R", "V", "C", etc.
     name: str         # "R1", "V1", etc.
     node1: str
@@ -18,12 +17,44 @@ class Component(BaseModel):
     period: float = None
 
 
-
 class SimulationRequest(BaseModel):
     mode: str
-    components: List[Component]
+    components: List[SimComponent]
     step_time: Optional[float] = 50e-6
     end_time: Optional[float] = 30e-3
+
+
+## Saving circuit model
+
+class ComponentPosition(BaseModel):
+    x: float
+    y: float
+
+class ComponentJSON(BaseModel):
+    id: str
+    type: str
+    position: ComponentPosition
+    rotation: float
+    value: Optional[float] = None
+    title: str
+    connections: Dict[str, List[str]]
+
+class WireEnd(BaseModel):
+    componentId: str
+    pinId: str
+
+class Wire(BaseModel):
+    id: str
+    from_: WireEnd   # `from` is reserved in Python, use `from_`
+    to: WireEnd
+    points: List[float]
+    color: str
+
+class CircuitCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    components: List[ComponentJSON]
+    wires: List[Wire]
 
 
 
