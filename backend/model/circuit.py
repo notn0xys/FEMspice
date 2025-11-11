@@ -26,14 +26,12 @@ class SimulationRequest(BaseModel):
 
 ## Saving circuit model
 
-class ComponentPosition(BaseModel):
-    x: float
-    y: float
 
 class ComponentJSON(BaseModel):
     id: str
     type: str
-    position: ComponentPosition
+    x: float
+    y: float
     rotation: float
     value: Optional[float] = None
     title: str
