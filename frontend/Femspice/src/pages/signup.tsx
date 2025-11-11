@@ -175,7 +175,7 @@ export default function Signup() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="Email (Email)"
+                      placeholder="Example@gmail.com"
                       required
                       className="w-full pl-10 pr-3 py-2"
                       value= {email}
