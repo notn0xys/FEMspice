@@ -67,7 +67,6 @@ def build_and_simulate_DC(components):
     for comp in components:
         if comp.type == "R":
             # node voltages
-            print(results)
             V1 = results.get(str(comp.node1).lower(), 0.0)
             V2 = results.get(str(comp.node2).lower(), 0.0)
             # resistor value in ohms

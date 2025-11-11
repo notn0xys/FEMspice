@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from model.user import User
+from model.user import User, UserPublic
 from config.db import users_collection
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi import Depends, HTTPException, status, APIRouter
@@ -83,6 +83,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        user.pop("hashed_password", None)
         return user
     except jwt.PyJWTError:
         raise HTTPException(
@@ -90,6 +91,6 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-@router.get("/me", response_model=User)
+@router.get("/profile", response_model=UserPublic)
 async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
     return current_user

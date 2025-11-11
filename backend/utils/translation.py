@@ -70,18 +70,6 @@ def convert_frontend_to_netlist(frontend_data):
         comp_name = f"{comp_type}{type_counters[comp_type]}"
         comp_mapping[comp["id"]] = comp_name
 
-        # parsed_components.append({
-        #     "type": comp_type,
-        #     "name": comp["id"][:3].upper(),
-        #     "node1": node1,
-        #     "node2": node2,
-        #     "value": comp["value"],
-        #     "unit": "ohm" if comp_type == "R" else
-        #             "volt" if comp_type == "V" else
-        #             "farad" if comp_type == "C" else
-        #             "henry" if comp_type == "L" else
-        #             "ampere" if comp_type == "I" else ""
-        # })
         parsed_components.append(Component(
             type=comp_type,
             name=comp_name,
@@ -99,3 +87,4 @@ def convert_frontend_to_netlist(frontend_data):
 
     json_safe_map = {f"{k[0]}:{k[1]}": v for k, v in net_name_map.items()}
     return {"components": parsed_components, "mappings": json_safe_map, 'components_mapping': comp_mapping}
+
