@@ -112,7 +112,6 @@ export default function Profile() {
   return (
     <div className="w-screen h-screen flex items-center justify-center ">
       <div className="w-7/10 min-w-5xl h-[500px] flex overflow-hidden rounded-xl shadow-lg dark:bg-[#3a3a37] ">
-        {/* Sidebar */}
         <div className="w-64 shadow-md p-4 flex flex-col">
           <h2 className="text-2xl font-bold text-orange-500 dark:text-orange-400 mb-6 text-center">
             My Profile
@@ -153,7 +152,6 @@ export default function Profile() {
             </button>
           </nav>
 
-          {/* Go Back button */}
           <div className="pt-4 border-t border-gray-300 dark:border-gray-700 mt-4">
             <button
               onClick={handleGoBack}
@@ -164,7 +162,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 p-8 overflow-y-auto">
           {activeTab === "account" && <AccountTab user={user} />}
           {activeTab === "creations" && (
@@ -178,7 +175,6 @@ export default function Profile() {
     </div>
   );
 }
-/* ---------- Components for each tab ---------- */
 
 function AccountTab({ user }: { user: User }) {
   if (!user) return null;

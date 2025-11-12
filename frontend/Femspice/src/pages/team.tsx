@@ -12,13 +12,13 @@ export default function MeetOurTeam() {
       description: "Team Lead & Developer, loves circuits and coding.",
     },
     {
-      name: "Person 2 me ig",
-      image: "/team/",
+      name: "Thunthanut Teemaethawee",
+      image: "/team/Jeyllyrez.png",
       description: "Frontend Developer, UI/UX enthusiast.",
     },
     {
-      name: "Person 3 tok ig",
-      image: "/team/",
+      name: "Koses Suvarnasuddhi",
+      image: "/team/koses.png",
       description: "Backend Developer & Database Specialist.",
     },
   ];
