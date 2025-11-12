@@ -1,15 +1,8 @@
-// import {
-//   Card,
-//   CardContent,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from "../components/ui/card";
 import { useState, useEffect } from "react";
-// import { Button } from "../components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Trash2 } from "lucide-react";
 
 type User = {
   id: string;
@@ -140,16 +133,6 @@ export default function Profile() {
               My Creations
             </button>
 
-            {/* <button
-              onClick={() => setActiveTab("settings")}
-              className={`text-left px-4 py-2 rounded-md font-medium transition ${
-                activeTab === "settings"
-                  ? "bg-[#d97757] text-white"
-                  : "text-gray-800 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              Settings
-            </button> */}
           </nav>
 
           <div className="pt-4 border-t border-gray-300 dark:border-gray-700 mt-4">
@@ -209,30 +192,64 @@ function CreationsTab({
   circuitList: Circuit[];
   navigate: (path: string) => void;
 }) {
+  const [circuits, setCircuits] = useState(circuitList);
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); 
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/delete?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) throw new Error("Delete failed");
+
+      setCircuits((prev) => prev.filter((c) => c.id !== id));
+      toast.success("Circuit deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting circuit:", error);
+      toast.error("Failed to delete circuit.");
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-[#4a4a47] rounded-lg shadow p-6">
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
         My Creations
       </h2>
-      {circuitList.length === 0 ? (
+
+      {circuits.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-400">No circuits yet.</p>
       ) : (
         <ul className="space-y-3">
-          {circuitList.map((circuit) => (
+          {circuits.map((circuit) => (
             <li
               key={circuit.id}
               onClick={() => navigate(`/home?id=${circuit.id}`)}
-              className="p-4 border border-gray-200 dark:border-gray-600 rounded-md cursor-pointer hover:bg-orange-50 dark:hover:bg-gray-500 transition"
+              className="p-4 border border-gray-200 dark:border-gray-600 rounded-md cursor-pointer hover:bg-orange-50 dark:hover:bg-gray-500 transition flex justify-between items-center"
             >
-              <h3 className="text-lg font-semibold text-[#d97757] dark:text-orange-400">
-                {circuit.name}
-              </h3>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                {circuit.description}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Created at: {new Date(circuit.created_at).toLocaleString()}
-              </p>
+              <div>
+                <h3 className="text-lg font-semibold text-[#d97757] dark:text-orange-400">
+                  {circuit.name}
+                </h3>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  {circuit.description}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Created at: {new Date(circuit.created_at).toLocaleString()}
+                </p>
+              </div>
+
+              <button
+                onClick={(e) => handleDelete(circuit.id, e)}
+                className="text-red-500 hover:text-red-700 dark:hover:text-red-400 transition"
+                title="Delete circuit"
+              >
+                <Trash2 size={20} />
+              </button>
             </li>
           ))}
         </ul>
@@ -241,22 +258,3 @@ function CreationsTab({
   );
 }
 
-// function SettingsTab() {
-//   return (
-//     <div className="bg-white dark:bg-[#4a4a47] rounded-lg shadow p-6">
-//       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-//         Settings
-//       </h2>
-//       <div className="space-y-3 text-gray-700 dark:text-gray-300">
-//         <label className="flex items-center">
-//           <input type="checkbox" className="mr-2 accent-orange-500" />
-//           Enable Dark Mode
-//         </label>
-//         <label className="flex items-center">
-//           <input type="checkbox" className="mr-2 accent-orange-500" />
-//           Email Notifications
-//         </label>
-//       </div>
-//     </div>
-//   );
-// }
