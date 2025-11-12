@@ -1,5 +1,3 @@
-import React from "react";
-
 type TeamMember = {
   name: string;
   image: string;
