@@ -111,19 +111,20 @@ export default function Profile() {
   //end of fetching
   return (
     <div className="w-screen h-screen flex items-center justify-center ">
-      <div className="w-7/10 min-w-5xl h-[500px] flex overflow-hidden rounded-xl shadow-lg bg-gray-50 dark:bg-gray-800">
-        <div className="w-64 bg-white dark:bg-gray-700 shadow-md p-4 flex flex-col">
-          <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-6 text-center">
+      <div className="w-7/10 min-w-5xl h-[500px] flex overflow-hidden rounded-xl shadow-lg dark:bg-[#3a3a37] ">
+        {/* Sidebar */}
+        <div className="w-64 shadow-md p-4 flex flex-col">
+          <h2 className="text-2xl font-bold text-orange-500 dark:text-orange-400 mb-6 text-center">
             My Profile
           </h2>
 
-          <nav className="flex flex-col space-y-2">
+          <nav className="flex flex-col space-y-2 flex-1">
             <button
               onClick={() => setActiveTab("account")}
-              className={`text-left px-4 py-2 rounded-md font-medium ${
+              className={`text-left px-4 py-2 rounded-md font-medium transition ${
                 activeTab === "account"
-                  ? "bg-blue-500 text-white dark:bg-blue-400"
-                  : "text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
+                  ? "bg-orange-500 text-white"
+                  : "text-gray-800 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-gray-700"
               }`}
             >
               Account
@@ -131,10 +132,10 @@ export default function Profile() {
 
             <button
               onClick={() => setActiveTab("creations")}
-              className={`text-left px-4 py-2 rounded-md font-medium ${
+              className={`text-left px-4 py-2 rounded-md font-medium transition ${
                 activeTab === "creations"
-                  ? "bg-blue-500 text-white dark:bg-blue-400"
-                  : "text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
+                  ? "bg-orange-500 text-white"
+                  : "text-gray-800 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-gray-700"
               }`}
             >
               My Creations
@@ -142,32 +143,33 @@ export default function Profile() {
 
             <button
               onClick={() => setActiveTab("settings")}
-              className={`text-left px-4 py-2 rounded-md font-medium ${
+              className={`text-left px-4 py-2 rounded-md font-medium transition ${
                 activeTab === "settings"
-                  ? "bg-blue-500 text-white dark:bg-blue-400"
-                  : "text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
+                  ? "bg-orange-500 text-white"
+                  : "text-gray-800 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-gray-700"
               }`}
             >
               Settings
             </button>
           </nav>
 
-          <div className="pt-4 border-t border-gray-300 dark:border-gray-600 mt-4">
+          {/* Go Back button */}
+          <div className="pt-4 border-t border-gray-300 dark:border-gray-700 mt-4">
             <button
               onClick={handleGoBack}
-              className="w-full text-left px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-600"
+              className="w-full text-left px-4 py-2 rounded-md font-medium transition"
             >
               ⬅ Go Back
             </button>
           </div>
         </div>
 
-        
-
-        {/* Main Content Area */}
+        {/* Main Content */}
         <div className="flex-1 p-8 overflow-y-auto">
           {activeTab === "account" && <AccountTab user={user} />}
-          {activeTab === "creations" && <CreationsTab circuitList={circuitList} navigate={navigate} />}
+          {activeTab === "creations" && (
+            <CreationsTab circuitList={circuitList} navigate={navigate} />
+          )}
           {activeTab === "settings" && <SettingsTab />}
         </div>
       </div>
@@ -176,34 +178,29 @@ export default function Profile() {
     </div>
   );
 }
-
 /* ---------- Components for each tab ---------- */
 
 function AccountTab({ user }: { user: User }) {
   if (!user) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className=" dark:bg-[#4a4a47] rounded-lg shadow p-6">
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
         Account Info
       </h2>
-
       <img
         src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${user.username}`}
         alt="Profile"
         className="w-24 h-24 rounded-full shadow-md mb-3"
       />
-
       <p className="text-gray-700 dark:text-gray-300 mb-2">
         <strong>Name:</strong> {user.full_name || user.username}
       </p>
-
       <p className="text-gray-700 dark:text-gray-300 mb-2">
         <strong>Email:</strong> {user.email}
       </p>
-
       <p className="text-gray-700 dark:text-gray-300">
-        <strong>Bio:</strong> Game Designer, circuit enthusiast
+        <strong>Bio:</strong> Game Designer, Circuit Enthusiast
       </p>
     </div>
   );
@@ -217,11 +214,10 @@ function CreationsTab({
   navigate: (path: string) => void;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-[#4a4a47] rounded-lg shadow p-6">
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
         My Creations
       </h2>
-
       {circuitList.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-400">No circuits yet.</p>
       ) : (
@@ -230,9 +226,9 @@ function CreationsTab({
             <li
               key={circuit.id}
               onClick={() => navigate(`/home?id=${circuit.id}`)}
-              className="p-4 border border-gray-200 dark:border-gray-700 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              className="p-4 border border-gray-200 dark:border-gray-600 rounded-md cursor-pointer hover:bg-orange-50 dark:hover:bg-gray-500 transition"
             >
-              <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+              <h3 className="text-lg font-semibold text-orange-500 dark:text-orange-400">
                 {circuit.name}
               </h3>
               <p className="text-sm text-gray-700 dark:text-gray-300">
@@ -251,17 +247,17 @@ function CreationsTab({
 
 function SettingsTab() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-[#4a4a47] rounded-lg shadow p-6">
       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
         Settings
       </h2>
       <div className="space-y-3 text-gray-700 dark:text-gray-300">
         <label className="flex items-center">
-          <input type="checkbox" className="mr-2" />
+          <input type="checkbox" className="mr-2 accent-orange-500" />
           Enable Dark Mode
         </label>
         <label className="flex items-center">
-          <input type="checkbox" className="mr-2" />
+          <input type="checkbox" className="mr-2 accent-orange-500" />
           Email Notifications
         </label>
       </div>
