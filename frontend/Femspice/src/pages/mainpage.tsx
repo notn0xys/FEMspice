@@ -20,6 +20,9 @@ import InductorNode, {
 import GroundNode, {
   GROUND_PIN_OFFSETS,
 } from "@/electric_components/GroundNode";
+import CurrentSourceNode, {
+  CURRENT_SOURCE_PIN_OFFSETS,
+} from "@/electric_components/CurrentSourceNode";
 import {
   Sheet,
   SheetContent,
@@ -33,6 +36,8 @@ import { Button } from "@/components/ui/button";
 import { useWireMode } from "@/context/wire-mode-context";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 const DRAG_DATA_MIME = "application/femspice-component";
 
@@ -43,6 +48,7 @@ const PIN_DEFINITIONS = {
   capacitor: CAPACITOR_PIN_OFFSETS,
   inductor: INDUCTOR_PIN_OFFSETS,
   ground: GROUND_PIN_OFFSETS,
+  currentSource: CURRENT_SOURCE_PIN_OFFSETS,
 } as const;
 
 const isSupportedComponentType = (type: string): type is ComponentType =>
@@ -122,6 +128,13 @@ const formatCurrent = (value: number) => `${value.toFixed(3)} A`;
 
 
 export default function MainPage() {
+  const { theme } = useTheme();
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof document === "undefined") {
+      return false;
+    }
+    return document.documentElement.classList.contains("dark");
+  });
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [components, setComponents] = useState<CanvasComponent[]>([]);
@@ -154,6 +167,40 @@ export default function MainPage() {
     [components, inspectorId],
   );
   const { wireMode, toggleWireMode } = useWireMode();
+  const wireColor = isDarkMode ? "#ffffff" : "#000000ff";
+  const measurementTagFill = isDarkMode ? "rgba(0,0,0,0.85)" : "rgba(15,23,42,0.85)";
+  const measurementTagStroke = isDarkMode ? "rgba(148,163,184,0.4)" : "rgba(148,163,184,0.6)";
+  const measurementTextColor = isDarkMode ? "#f8fafc" : "#0f172a";
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    const updateThemeState = () => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    };
+
+    updateThemeState();
+
+    const observer = new MutationObserver(updateThemeState);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, [theme]);
+  useEffect(() => {
+    setWires((prevWires) =>
+      prevWires.map((wire) => {
+        if (!wire.color || wire.color === "#1f2937" || wire.color === "#ffffff") {
+          return { ...wire, color: wireColor };
+        }
+        return wire;
+      })
+    );
+    setDraftWire((prevDraft) => (prevDraft ? { ...prevDraft, color: wireColor } : prevDraft));
+  }, [wireColor]);
   //Resize stage to fit container
   useEffect(() => {
     const updateStageSize = () => {
@@ -171,16 +218,16 @@ export default function MainPage() {
       window.removeEventListener("resize", updateStageSize);
     };
   }, []);
-  useEffect(() => { 
-    const id = searchParams.get("id");
-    if (!id || hasLoadedRef.current) {
+  useEffect(() => {
+    const circuitId = searchParams.get("id");
+    if (!circuitId || hasLoadedRef.current) {
       return;
     }
 
     hasLoadedRef.current = true;
     const fetchCircuit = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/simulate/load/${id}`, {
+        const response = await fetch(`http://127.0.0.1:8000/simulate/load/${circuitId}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -194,11 +241,11 @@ export default function MainPage() {
         console.log("Loaded circuit data:", data);
         setComponents(data.components || []);
         const normalizedWires: CanvasWire[] = (data.wires ?? []).map((wire: any) => {
-        const { from_, ...rest } = wire;
+          const { from_, ...rest } = wire;
           return {
             ...rest,
             from: from_,
-            color: wire.color ?? "#1f2937",
+            color: wire.color ?? wireColor,
           };
         });
         setWires(normalizedWires);
@@ -208,7 +255,7 @@ export default function MainPage() {
     };
 
     fetchCircuit();
-  }, []);
+  }, [searchParams]);
   useEffect(() => {
     if (!activeComponent) {
       if (inspectorId) {
@@ -402,7 +449,7 @@ export default function MainPage() {
           from: { componentId: componentID, pinId: pinId as keyof typeof PIN_DEFINITIONS[ComponentType] },
           to: { componentId: componentID, pinId: pinId as keyof typeof PIN_DEFINITIONS[ComponentType] },
           points: [pinPosition.x, pinPosition.y, pointerPosition.x, pointerPosition.y],
-          color: "#1f2937",
+          color: wireColor,
         };
         setDraftWire(newWire);
         return;
@@ -471,7 +518,7 @@ export default function MainPage() {
         return component;
       }),
     );
-    }, [wireMode, components, draftWire]
+    }, [wireMode, components, draftWire, wireColor]
   );  
   const handleDrop = useCallback(
     (event: ReactDragEvent<HTMLDivElement>) => {
@@ -625,7 +672,7 @@ export default function MainPage() {
         from: wire.from,
         to: wire.to,
         points: wire.points,
-        color: wire.color ?? null,
+        color: wire.color ?? wireColor,
       })),
     };
 
@@ -639,6 +686,26 @@ export default function MainPage() {
       });
 
       if (!response.ok) {
+        if (response.status === 400) {
+          let message = "No ground detected. Add a ground component and try again.";
+          try {
+            const errorBody = await response.json();
+            const detail =
+              typeof errorBody?.detail === "string"
+                ? errorBody.detail
+                : typeof errorBody?.message === "string"
+                  ? errorBody.message
+                  : null;
+            if (detail && detail.trim().length > 0) {
+              message = detail;
+            }
+          } catch (parseError) {
+            console.debug("Failed to parse 400 response", parseError);
+          }
+          toast.error(message, { duration: 4000 });
+          return;
+        }
+
         throw new Error(`Simulation request failed (${response.status})`);
       }
 
@@ -646,6 +713,7 @@ export default function MainPage() {
       applySimulationResult(data);
       console.log(data);
     } catch (error) {
+      toast.error("Unable to run the simulation. Please try again.");
       console.groupCollapsed("[FEMspice] Simulation fallback");
       console.log("Payload", payload);
       console.warn(
@@ -722,7 +790,7 @@ export default function MainPage() {
     setComponents((prevComponents) =>
       prevComponents.map((component) =>
         component.id === selectedId
-          ? { ...component, rotation: component.rotation + 90 }
+          ? { ...component, rotation: component.rotation + 45 }
           : component
       )
     );
@@ -734,7 +802,7 @@ export default function MainPage() {
         components.map((component) => [
           component.id,
           component.id === selectedId
-            ? { ...component, rotation: component.rotation + 90 }
+            ? { ...component, rotation: component.rotation + 45 }
             : component,
         ])
       );
@@ -954,6 +1022,24 @@ export default function MainPage() {
             }
           />
         );
+      case "currentSource":
+        return (
+          <CurrentSourceNode
+            key={component.id}
+            x={component.x}
+            y={component.y}
+            rotation={component.rotation}
+            current={component.value ? `${component.value}A` : "5A"}
+            onDragEnd={(event) => handleComponentDragEnd(component.id, event)}
+            onSelect={() => handleSelect(component.id)}
+            isSelected={isSelected}
+            onContextMenu={(event) => handleNodeContextMenu(component.id, event)}
+            wireMode={wireMode}
+            onPinPointerDown={(pinId, event) =>
+              handlePinPointerDown(component.id, pinId, event)
+            }
+          />
+        );
       case "ground":
         return (
           <GroundNode
@@ -1019,7 +1105,7 @@ export default function MainPage() {
       from_: wire.from,
       to: wire.to,
       points: wire.points,
-      color: wire.color ?? null,
+      color: wire.color ?? wireColor,
     }));
 
     const payload = {
@@ -1119,6 +1205,8 @@ export default function MainPage() {
         return "Resistance (Ω)";
       case "voltageSource":
         return "Voltage (V)";
+      case "currentSource":
+        return "Current (A)";
       case "capacitor":
         return "Capacitance (F)";
       case "inductor":
@@ -1134,6 +1222,8 @@ export default function MainPage() {
         return "Enter resistance";
       case "voltageSource":
         return "Enter voltage";
+      case "currentSource":
+        return "Enter current";
       case "capacitor":
         return "Enter capacitance";
       case "inductor":
@@ -1142,6 +1232,7 @@ export default function MainPage() {
         return "Enter value";
     }
   })();
+  const id = searchParams.get("id");
   return (
     <Layout
       onRunCircuit={handleRunCircuit}
@@ -1149,6 +1240,7 @@ export default function MainPage() {
       onModeChange={setCircuitMode}
       onSaveCircuit={openSaveDialog}
       onClearCircuit={handleClearCircuit}
+      id= { id ?? "" }
     >
       <div
         ref={containerRef}
@@ -1211,7 +1303,7 @@ export default function MainPage() {
                   <Group key={wire.id}>
                     <Line
                       points={wire.points}
-                      stroke={selectedWireId === wire.id ? "#2563eb" : wire.color ?? "#1f2937"}
+                      stroke={selectedWireId === wire.id ? "#2563eb" : wire.color ?? wireColor}
                       strokeWidth={selectedWireId === wire.id ? 4 : 2}
                       lineCap="round"
                       lineJoin="round"
@@ -1229,14 +1321,14 @@ export default function MainPage() {
                         listening={false}
                       >
                         <KonvaTag
-                          fill="rgba(15,23,42,0.85)"
-                          stroke="rgba(148,163,184,0.6)"
+                          fill={measurementTagFill}
+                          stroke={measurementTagStroke}
                           strokeWidth={1}
                           cornerRadius={4}
                         />
                         <KonvaText
                           text={formatVoltage(annotation)}
-                          fill="#f8fafc"
+                          fill={measurementTextColor}
                           fontSize={12}
                           padding={4}
                         />
@@ -1248,7 +1340,7 @@ export default function MainPage() {
               {draftWire && (
                 <Line
                   points={draftWire.points}
-                  stroke={draftWire.color || "#3b82f6"}
+                  stroke={draftWire.color || wireColor}
                   strokeWidth={3}
                   dash={[8, 8]}
                   lineCap="round"
@@ -1262,7 +1354,7 @@ export default function MainPage() {
                 <Line
                   key={wire.id}
                   points={wire.points}
-                  stroke={selectedWireId === wire.id ? "#2563eb" : wire.color ?? "#1f2937"}
+                  stroke={selectedWireId === wire.id ? "#2563eb" : wire.color ?? wireColor}
                   strokeWidth={selectedWireId === wire.id ? 4 : 2}
                   lineCap="round"
                   lineJoin="round"
@@ -1277,7 +1369,7 @@ export default function MainPage() {
               {draftWire && (
                 <Line
                   points={draftWire.points}
-                  stroke={draftWire.color || "#3b82f6"}
+                  stroke={draftWire.color || wireColor}
                   strokeWidth={3}
                   dash={[8, 8]}
                   lineCap="round"
@@ -1305,14 +1397,14 @@ export default function MainPage() {
                     listening={false}
                   >
                     <KonvaTag
-                      fill="rgba(15,23,42,0.85)"
-                      stroke="rgba(148,163,184,0.6)"
+                      fill={measurementTagFill}
+                      stroke={measurementTagStroke}
                       strokeWidth={1}
                       cornerRadius={4}
                     />
                     <KonvaText
                       text={formatCurrent(current)}
-                      fill="#f8fafc"
+                      fill={measurementTextColor}
                       fontSize={12}
                       padding={4}
                     />
