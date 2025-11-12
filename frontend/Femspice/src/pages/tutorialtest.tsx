@@ -6,7 +6,7 @@ export default function TutorialTestPage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">
-      <h1 className="text-2xl font-bold">TEST</h1>
+      <h1 className="text-2xl font-bold">HOW DID YOU END UP HERE????</h1>
 
       <button
         onClick={() => setIsOpen(true)}

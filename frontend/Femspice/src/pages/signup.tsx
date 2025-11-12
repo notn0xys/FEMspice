@@ -8,14 +8,12 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-// import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Lock, User, Mail } from "lucide-react"
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from "framer-motion";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import { register } from "module";
 import { jwtDecode } from "jwt-decode";
 
 export default function Signup() {

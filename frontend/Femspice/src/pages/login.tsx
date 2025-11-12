@@ -14,7 +14,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from "framer-motion";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-//bring used import to app later na ja
 import { jwtDecode } from "jwt-decode";
 
 export default function Login() {
