@@ -6,6 +6,7 @@ import MainPage from './pages/mainpage'
 import Signup from './pages/signup'
 import Profile from './pages/profile'
 import TutorialTest from './pages/tutorialtest'
+import MeetOurTeam from './pages/team'
 import { useEffect } from 'react';
 import PublicRoute from './routes/PublicRoute';
 import UserRoute from './routes/UserRoute'
@@ -32,6 +33,8 @@ function App() {
         <Route path='/signup' element = {<PublicRoute><Signup/></PublicRoute>}/>
         <Route path='/profile' element = {<PublicRoute><Profile/></PublicRoute>}/>
         <Route path="/tutorial-test" element={<PublicRoute><TutorialTest /></PublicRoute>} />
+        <Route path="/team" element={<PublicRoute><MeetOurTeam /></PublicRoute>} />
+
       </Routes>
       <Toaster position="top-right" richColors closeButton />
     </div>
