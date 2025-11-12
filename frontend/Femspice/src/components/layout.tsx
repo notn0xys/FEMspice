@@ -12,7 +12,7 @@ import {
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-
+import TutorialModal from "./tutorial";
 type LayoutProps = {
   children: React.ReactNode;
   onRunCircuit?: () => void;
@@ -42,7 +42,7 @@ export default function Layout({ id, onSaveCircuit, onClearCircuit, children, on
     
     localStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
-
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   return (
 
       <SidebarProvider 
@@ -63,7 +63,7 @@ export default function Layout({ id, onSaveCircuit, onClearCircuit, children, on
                   <NavigationMenu viewport={false} className="z-50">
                     <NavigationMenuList className="gap-4">
                       <NavigationMenuItem>
-                        <NavigationMenuTrigger className=" hover:bg-gray-700">Home</NavigationMenuTrigger>
+                        <NavigationMenuTrigger className=" ">Pages</NavigationMenuTrigger>
                         <NavigationMenuContent className="w-[400px] text-black z-50">
                           <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                             <li>
@@ -83,10 +83,10 @@ export default function Layout({ id, onSaveCircuit, onClearCircuit, children, on
                         </NavigationMenuContent>
                       </NavigationMenuItem>
                       <NavigationMenuItem>
-                        <NavigationMenuTrigger className=" hover:bg-gray-700">About</NavigationMenuTrigger>
+                        <NavigationMenuTrigger className=" ">About</NavigationMenuTrigger>
                         <NavigationMenuContent className="w-[400px] text-black z-50">
                           <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                            <li>
+                            <li className="w-full">
                               <NavigationMenuLink asChild>
                                 <Link 
                                   to="/about"
@@ -115,13 +115,34 @@ export default function Layout({ id, onSaveCircuit, onClearCircuit, children, on
                           </ul>
                         </NavigationMenuContent>
                       </NavigationMenuItem>
+                      <NavigationMenuItem>
+                        <NavigationMenuTrigger className="">Tutorials</NavigationMenuTrigger>
+                        <NavigationMenuContent className="w-[400px] text-black z-50">
+                          <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px]">
+                            <li>
+                              <NavigationMenuLink asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsTutorialOpen(true)}
+                                  className="w-full select-none space-y-1 rounded-md p-3 text-left leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                >
+                                  <div className="text-sm font-medium leading-none">Guided Tutorial</div>
+                                  <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                    Walk through key features step-by-step.
+                                  </p>
+                                </button>
+                              </NavigationMenuLink>
+                            </li>
+                          </ul>
+                        </NavigationMenuContent>
+                      </NavigationMenuItem>
                     </NavigationMenuList>
                   </NavigationMenu>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={toggleTheme}
-                    className="text-white hover:bg-gray-700"
+                    className="text-white"
                   >
                     {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" color="black" />}
                   </Button>
@@ -130,6 +151,10 @@ export default function Layout({ id, onSaveCircuit, onClearCircuit, children, on
             <div className="flex-1 overflow-hidden">
                 {children}
             </div>
+            <TutorialModal
+              isOpen={isTutorialOpen}
+              onClose={() => setIsTutorialOpen(false)}
+            />
         </div>
       </div>
       </SidebarProvider>

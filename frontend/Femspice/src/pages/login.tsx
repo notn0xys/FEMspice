@@ -1,12 +1,11 @@
+import PageNav from "@/components/page-nav";
 import {
   Card,
-  // CardAction,
-  // CardDescription
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
+} from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -75,19 +74,20 @@ export default function Login() {
 
   return (
     <motion.div
-      className="w-screen h-screen flex items-center justify-center"
+      className="min-h-screen w-full bg-background flex flex-col"
       initial={{ opacity: 0, y: 30 }} 
       animate={{ opacity: 1, y: 0 }}      
       exit={{ opacity: 0, y: -30 }}      
       transition={{ duration: 0.2, ease: "easeInOut" }} 
     >
-      <div className="w-screen h-screen flex items-center justify-center">
-        <div className="w-7/10 min-w-5xl h-[500px] flex overflow-hidden border rounded-xl">
-          <div className="w-7/10 h-[500px] relative overflow-hidden rounded-l-xl rounded-r-none">
+      <PageNav />
+      <div className="flex w-full flex-1 items-center justify-center px-6 pb-12">
+        <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-xl border bg-card shadow-sm md:h-[500px] md:flex-row">
+          <div className="relative hidden h-full flex-1 overflow-hidden md:block">
               <img
                 src="/slideshow1.png"
                 alt="Slideshow"
-                className="object-cover w-full h-full blur-[4px] "
+                className="h-full w-full object-cover blur-[4px]"
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <h2 className="text-black text-3xl font-bold drop-shadow-lg text-center px-4">
@@ -95,7 +95,7 @@ export default function Login() {
                 </h2>
               </div>
             </div>
-          <Card className="w-3/10 h-[500px] flex overflow-hidden rounded-r-xl rounded-l-none border-none">
+          <Card className="flex w-full max-w-md flex-1 flex-col justify-between border-0 bg-card md:h-full md:max-w-sm md:rounded-none">
             
           <CardHeader>
               <CardTitle className="flex justify-center">
