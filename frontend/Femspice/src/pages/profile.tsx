@@ -150,7 +150,6 @@ export default function Profile() {
           {activeTab === "creations" && (
             <CreationsTab circuitList={circuitList} navigate={navigate} />
           )}
-          {/* {activeTab === "settings" && <SettingsTab />} */}
         </div>
       </div>
 
@@ -188,6 +187,7 @@ function AccountTab({ user }: { user: User }) {
 function CreationsTab({
   circuitList,
   navigate,
+
 }: {
   circuitList: Circuit[];
   navigate: (path: string) => void;
@@ -196,12 +196,18 @@ function CreationsTab({
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation(); 
+    
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/delete?id=${id}`, {
+      const token = localStorage.getItem("token"); 
+      if (!token) {
+        toast.error("You are not logged in");
+        return;
+      }
+      const res = await fetch(`http://127.0.0.1:8000/simulate/delete/${id}`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
