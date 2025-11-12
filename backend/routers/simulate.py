@@ -30,12 +30,16 @@ async def simulate_circuit(sim_request: SimulationRequest):
 
 @router.post("/test", status_code=status.HTTP_200_OK)
 async def test_endpoint(frontend_data: dict):
-    translation_res = translate.convert_frontend_to_netlist(frontend_data)
-    result = sim.build_and_simulate_DC(translation_res["components"])
-
-    return {"result": result, 
-            "mappings": translation_res['mappings'], 
-            'components_mapping': translation_res['components_mapping']}
+    try:
+        translation_res = translate.convert_frontend_to_netlist(frontend_data)
+        result = sim.build_and_simulate_DC(translation_res["components"])
+        return {"result": result, 
+                "mappings": translation_res['mappings'], 
+                'components_mapping': translation_res['components_mapping']}
+    
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    
 @router.post("/save", status_code=status.HTTP_201_CREATED)
 async def save_circuit(circuit_data: CircuitCreate, current_user: Annotated[UserPublic, Depends(get_current_user)]):
     simulation_doc = circuit_data.model_dump()
