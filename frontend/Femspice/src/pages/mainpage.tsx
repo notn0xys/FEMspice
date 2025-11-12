@@ -23,6 +23,10 @@ import GroundNode, {
 import CurrentSourceNode, {
   CURRENT_SOURCE_PIN_OFFSETS,
 } from "@/electric_components/CurrentSourceNode";
+import PulseVoltageSourceNode, {
+  PULSE_VOLTAGE_SOURCE_PIN_OFFSETS,
+  type PulseSettings,
+} from "@/electric_components/PulseVoltageSourceNode";
 import {
   Sheet,
   SheetContent,
@@ -49,6 +53,7 @@ const PIN_DEFINITIONS = {
   inductor: INDUCTOR_PIN_OFFSETS,
   ground: GROUND_PIN_OFFSETS,
   currentSource: CURRENT_SOURCE_PIN_OFFSETS,
+  pulseVoltageSource: PULSE_VOLTAGE_SOURCE_PIN_OFFSETS,
 } as const;
 
 const isSupportedComponentType = (type: string): type is ComponentType =>
@@ -80,6 +85,7 @@ type CanvasComponent = {
   value?: number;
   title?: string;
   connections: ComponentConnections;
+  pulseSettings?: PulseSettings;
 };
 
 
@@ -87,6 +93,10 @@ type ComponentDraft = {
   title: string;
   value: string;
   rotation: string;
+  pulseInitial: string;
+  pulseValue: string;
+  pulseWidth: string;
+  pulsePeriod: string;
 };
 
 type SimulationApiResponse = {
@@ -106,6 +116,74 @@ type SimulationState = {
 };
 
 const normalizeNodeName = (node: string) => node.trim().toUpperCase();
+
+const normalizeNumeric = (value: unknown): number | undefined => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      return undefined;
+    }
+    const parsed = Number.parseFloat(trimmed);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  }
+  return undefined;
+};
+
+const normalizePulseSettings = (input: unknown): PulseSettings | undefined => {
+  if (!input || typeof input !== "object") {
+    return undefined;
+  }
+
+  const source = input as Record<string, unknown>;
+
+  const nestedPulse = (() => {
+    const nestedCandidates = [source.pulseSettings, source.pulse_settings];
+    for (const candidate of nestedCandidates) {
+      if (candidate && typeof candidate === "object") {
+        const normalized = normalizePulseSettings(candidate);
+        if (normalized) {
+          return normalized;
+        }
+      }
+    }
+    return undefined;
+  })();
+
+  const extractNumeric = (raw: unknown): number | undefined => {
+    if (Array.isArray(raw)) {
+      if (raw.length === 0) {
+        return undefined;
+      }
+      return normalizeNumeric(raw[0]);
+    }
+    return normalizeNumeric(raw);
+  };
+
+  const initialRaw =
+    source.initialValue ??
+    source.initial_value ??
+    source.initial ??
+    source.initial_val ??
+    source.initialVoltage;
+
+  const pulseValueRaw = source.pulseValue ?? source.pulse_value;
+  const pulseWidthRaw = source.pulseWidth ?? source.pulse_width;
+  const periodRaw = source.period ?? source.pulse_period;
+
+  const normalized: PulseSettings = {
+    initialValue: extractNumeric(initialRaw) ?? nestedPulse?.initialValue,
+    pulseValue: extractNumeric(pulseValueRaw) ?? nestedPulse?.pulseValue,
+    pulseWidth: extractNumeric(pulseWidthRaw) ?? nestedPulse?.pulseWidth,
+    period: extractNumeric(periodRaw) ?? nestedPulse?.period,
+  };
+
+  return Object.values(normalized).some((value) => value !== undefined)
+    ? normalized
+    : undefined;
+};
 
 const getWireLabelPosition = (points: number[]): { x: number; y: number } | null => {
   if (points.length < 4) {
@@ -156,6 +234,10 @@ export default function MainPage() {
     title: "",
     value: "",
     rotation: "0",
+    pulseInitial: "",
+    pulseValue: "",
+    pulseWidth: "",
+    pulsePeriod: "",
   });
   const [wires, setWires] = useState<CanvasWire[]>([]);
   const [draftWire, setDraftWire] = useState<CanvasWire | null>(null);
@@ -261,7 +343,57 @@ export default function MainPage() {
         }
         const data = await response.json();
         console.log("Loaded circuit data:", data);
-        setComponents(data.components || []);
+        const normalizedComponents: CanvasComponent[] = (data.components ?? []).map(
+          (component: any) => {
+            const pulseSettings =
+              normalizePulseSettings(component) ??
+              normalizePulseSettings(component.pulseSettings) ??
+              normalizePulseSettings(component.pulse_settings);
+
+            const valueFromArray = Array.isArray(component?.initial_value)
+              ? normalizeNumeric(component.initial_value[0])
+              : undefined;
+            const normalizedValue = normalizeNumeric(component.value);
+            const resolvedValue =
+              component.type === "pulseVoltageSource"
+                ? pulseSettings?.initialValue ?? valueFromArray ?? normalizedValue
+                : normalizedValue;
+
+            const resolvedPosition =
+              typeof component.position === "object" && component.position
+                ? component.position
+                : undefined;
+
+            const connections =
+              component.connections && typeof component.connections === "object"
+                ? (component.connections as ComponentConnections)
+                : ({} as ComponentConnections);
+
+            const normalizedComponent: CanvasComponent = {
+              id: String(component.id ?? ""),
+              type: String(component.type ?? ""),
+              x:
+                typeof component.x === "number"
+                  ? component.x
+                  : normalizeNumeric(resolvedPosition?.x) ?? 0,
+              y:
+                typeof component.y === "number"
+                  ? component.y
+                  : normalizeNumeric(resolvedPosition?.y) ?? 0,
+              rotation: normalizeNumeric(component.rotation) ?? 0,
+              value: resolvedValue,
+              title:
+                component.title === null || component.title === undefined
+                  ? undefined
+                  : String(component.title),
+              connections,
+              pulseSettings,
+            };
+
+            return normalizedComponent;
+          },
+        );
+        setComponents(normalizedComponents);
         const normalizedWires: CanvasWire[] = (data.wires ?? []).map((wire: any) => {
           const { from_, ...rest } = wire;
           return {
@@ -284,7 +416,15 @@ export default function MainPage() {
         setInspectorId(null);
       }
 
-      setDraft({ title: "", value: "", rotation: "0" });
+        setDraft({
+          title: "",
+          value: "",
+          rotation: "0",
+          pulseInitial: "",
+          pulseValue: "",
+          pulseWidth: "",
+          pulsePeriod: "",
+        });
       return;
     }
 
@@ -293,6 +433,26 @@ export default function MainPage() {
       value:
         activeComponent.value !== undefined ? String(activeComponent.value) : "",
       rotation: String(activeComponent.rotation ?? 0),
+      pulseInitial:
+        activeComponent.pulseSettings?.initialValue !== undefined &&
+        activeComponent.pulseSettings?.initialValue !== null
+          ? String(activeComponent.pulseSettings.initialValue)
+          : "",
+      pulseValue:
+        activeComponent.pulseSettings?.pulseValue !== undefined &&
+        activeComponent.pulseSettings?.pulseValue !== null
+          ? String(activeComponent.pulseSettings.pulseValue)
+          : "",
+      pulseWidth:
+        activeComponent.pulseSettings?.pulseWidth !== undefined &&
+        activeComponent.pulseSettings?.pulseWidth !== null
+          ? String(activeComponent.pulseSettings.pulseWidth)
+          : "",
+      pulsePeriod:
+        activeComponent.pulseSettings?.period !== undefined &&
+        activeComponent.pulseSettings?.period !== null
+          ? String(activeComponent.pulseSettings.period)
+          : "",
     });
   }, [activeComponent, inspectorId]);
 
@@ -551,7 +711,7 @@ export default function MainPage() {
         return;
       }
 
-      let payload: { type?: string; value?: number; title?: string };
+  let payload: { type?: string; value?: number; title?: string; pulseSettings?: PulseSettings };
       try {
         payload = JSON.parse(dataString);
       } catch (error) {
@@ -564,6 +724,16 @@ export default function MainPage() {
         console.error("Drag payload missing component type", payload);
         return;
       }
+
+      const defaultPulseSettings: PulseSettings | undefined =
+        componentType === "pulseVoltageSource"
+          ? payload.pulseSettings ?? {
+              initialValue: 0,
+              pulseValue: 10,
+              pulseWidth: 0.01,
+              period: 0.02,
+            }
+          : undefined;
 
       const stage = stageRef.current;
       if (!stage) return;
@@ -578,6 +748,11 @@ export default function MainPage() {
         .toString(36)
         .slice(2)}`;
 
+      const initialValue =
+        componentType === "pulseVoltageSource"
+          ? defaultPulseSettings?.initialValue ?? undefined
+          : payload.value;
+
       setComponents((prevComponents) => [
         ...prevComponents,
         {
@@ -586,9 +761,10 @@ export default function MainPage() {
           x: dropPosition.x,
           y: dropPosition.y,
           rotation: 0,
-          value: payload.value,
+          value: initialValue,
           title: payload.title,
           connections: {},
+          pulseSettings: defaultPulseSettings,
         },
       ]);
 
@@ -680,15 +856,33 @@ export default function MainPage() {
   const handleRunCircuit = useCallback(async () => {
     const payload = {
       mode: circuitMode,
-      components: components.map((component) => ({
-        id: component.id,
-        type: component.type,
-        position: { x: component.x, y: component.y },
-        rotation: component.rotation,
-        value: component.value ?? null,
-        title: component.title ?? null,
-        connections: component.connections,
-      })),
+      components: components.map((component) => {
+        const base = {
+          id: component.id,
+          type: component.type,
+          position: { x: component.x, y: component.y },
+          rotation: component.rotation,
+          value: component.value ?? null,
+          title: component.title ?? null,
+          connections: component.connections,
+        };
+
+        if (component.type === "pulseVoltageSource") {
+          const initialValue =
+            component.pulseSettings?.initialValue ?? component.value ?? 0;
+
+          return {
+            ...base,
+            value: initialValue ?? null,
+            initial_value: [initialValue ?? 0, "", "volt"],
+            pulse_value: component.pulseSettings?.pulseValue ?? null,
+            pulse_width: component.pulseSettings?.pulseWidth ?? null,
+            period: component.pulseSettings?.period ?? null,
+          };
+        }
+
+        return base;
+      }),
       wires: wires.map((wire) => ({
         id: wire.id,
         from: wire.from,
@@ -706,6 +900,7 @@ export default function MainPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      console.log("Simulation request payload:", payload);
 
       if (!response.ok) {
         if (response.status === 400) {
@@ -783,6 +978,45 @@ export default function MainPage() {
           : numericValue;
       }
 
+      let nextPulseSettings = activeComponent.pulseSettings;
+      if (activeComponent.type === "pulseVoltageSource") {
+        const parsePulseNumber = (input: string, label: string): number | undefined => {
+          const trimmed = input.trim();
+          if (trimmed === "") {
+            return undefined;
+          }
+          const numeric = Number.parseFloat(trimmed);
+          if (!Number.isFinite(numeric)) {
+            toast.error(`${label} must be a number`);
+            throw new Error("invalid pulse input");
+          }
+          return numeric;
+        };
+
+        try {
+          const parsedInitial = parsePulseNumber(draft.pulseInitial, "Initial value");
+          const parsedPulse = parsePulseNumber(draft.pulseValue, "Pulse value");
+          const parsedWidth = parsePulseNumber(draft.pulseWidth, "Pulse width");
+          const parsedPeriod = parsePulseNumber(draft.pulsePeriod, "Period");
+
+          nextPulseSettings = {
+            initialValue: parsedInitial,
+            pulseValue: parsedPulse,
+            pulseWidth: parsedWidth,
+            period: parsedPeriod,
+          };
+
+          if (!Object.values(nextPulseSettings).some((value) => value !== undefined)) {
+            nextPulseSettings = undefined;
+          }
+
+          nextValue = parsedInitial ?? undefined;
+        } catch (error) {
+          console.debug("Pulse inspector input rejected", error);
+          return;
+        }
+      }
+
       setComponents((prev) =>
         prev.map((component) =>
           component.id === activeComponent.id
@@ -791,6 +1025,7 @@ export default function MainPage() {
                 title: trimmedTitle === "" ? undefined : trimmedTitle,
                 value: nextValue,
                 rotation: nextRotation,
+                pulseSettings: nextPulseSettings,
               }
             : component,
         ),
@@ -1068,6 +1303,25 @@ export default function MainPage() {
             isDarkMode={isDarkMode}
           />
         );
+      case "pulseVoltageSource":
+        return (
+          <PulseVoltageSourceNode
+            key={themeKey}
+            x={component.x}
+            y={component.y}
+            rotation={component.rotation}
+            pulseSettings={component.pulseSettings}
+            onDragEnd={(event) => handleComponentDragEnd(component.id, event)}
+            onSelect={() => handleSelect(component.id)}
+            isSelected={isSelected}
+            onContextMenu={(event) => handleNodeContextMenu(component.id, event)}
+            wireMode={wireMode}
+            onPinPointerDown={(pinId, event) =>
+              handlePinPointerDown(component.id, pinId, event)
+            }
+            isDarkMode={isDarkMode}
+          />
+        );
       case "ground":
         return (
           <GroundNode
@@ -1118,16 +1372,34 @@ export default function MainPage() {
       return;
     }
 
-    const serializedComponents = components.map((component) => ({
-      id: component.id,
-      type: component.type,
-      x: component.x,
-      y: component.y,
-      rotation: component.rotation,
-      value: component.value ?? null,
-      title: component.title ?? null,
-      connections: component.connections,
-    }));
+    const serializedComponents = components.map((component) => {
+      const base = {
+        id: component.id,
+        type: component.type,
+        x: component.x,
+        y: component.y,
+        rotation: component.rotation,
+        value: component.value ?? null,
+        title: component.title ?? null,
+        connections: component.connections,
+      };
+
+      if (component.type === "pulseVoltageSource") {
+        const initialValue =
+          component.pulseSettings?.initialValue ?? component.value ?? 0;
+
+        return {
+          ...base,
+          value: initialValue ?? null,
+          initial_value: [initialValue ?? 0, "", "volt"],
+          pulse_value: component.pulseSettings?.pulseValue ?? null,
+          pulse_width: component.pulseSettings?.pulseWidth ?? null,
+          period: component.pulseSettings?.period ?? null,
+        };
+      }
+
+      return base;
+    });
 
     const serializedWires = wires.map((wire) => ({
       id: wire.id,
@@ -1186,7 +1458,15 @@ export default function MainPage() {
     setSelectedWireId(null);
     setInspectorId(null);
     setSimulationResult(null);
-    setDraft({ title: "", value: "", rotation: "0" });
+    setDraft({
+      title: "",
+      value: "",
+      rotation: "0",
+      pulseInitial: "",
+      pulseValue: "",
+      pulseWidth: "",
+      pulsePeriod: "",
+    });
     setSaveName("");
     setSaveDescription("");
     setIsSaveDialogOpen(false);
@@ -1240,6 +1520,8 @@ export default function MainPage() {
         return "Capacitance (F)";
       case "inductor":
         return "Inductance (H)";
+      case "pulseVoltageSource":
+        return "Initial Value (V)";
       default:
         return "Value";
     }
@@ -1257,6 +1539,8 @@ export default function MainPage() {
         return "Enter capacitance";
       case "inductor":
         return "Enter inductance";
+      case "pulseVoltageSource":
+        return "Enter initial value";
       default:
         return "Enter value";
     }
@@ -1501,18 +1785,64 @@ export default function MainPage() {
                   onChange={(event) => handleDraftChange("title", event.target.value)}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor={`${activeComponent.id}-value`}>
-                  {valueFieldLabel}
-                </Label>
-                <Input
-                  id={`${activeComponent.id}-value`}
-                  type="number"
-                  placeholder={`${valueFieldPlaceholder} (optional)`}
-                  value={draft.value}
-                  onChange={(event) => handleDraftChange("value", event.target.value)}
-                />
-              </div>
+              {activeComponent.type !== "pulseVoltageSource" ? (
+                <div className="space-y-2">
+                  <Label htmlFor={`${activeComponent.id}-value`}>
+                    {valueFieldLabel}
+                  </Label>
+                  <Input
+                    id={`${activeComponent.id}-value`}
+                    type="number"
+                    placeholder={`${valueFieldPlaceholder} (optional)`}
+                    value={draft.value}
+                    onChange={(event) => handleDraftChange("value", event.target.value)}
+                  />
+                </div>
+              ) : null}
+              {activeComponent.type === "pulseVoltageSource" ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor={`${activeComponent.id}-pulse-initial`}>Initial Value (V)</Label>
+                    <Input
+                      id={`${activeComponent.id}-pulse-initial`}
+                      type="number"
+                      placeholder="Enter initial value"
+                      value={draft.pulseInitial}
+                      onChange={(event) => handleDraftChange("pulseInitial", event.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`${activeComponent.id}-pulse-value`}>Pulse Value (V)</Label>
+                    <Input
+                      id={`${activeComponent.id}-pulse-value`}
+                      type="number"
+                      placeholder="Enter pulse value"
+                      value={draft.pulseValue}
+                      onChange={(event) => handleDraftChange("pulseValue", event.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`${activeComponent.id}-pulse-width`}>Pulse Width (s)</Label>
+                    <Input
+                      id={`${activeComponent.id}-pulse-width`}
+                      type="number"
+                      placeholder="Enter pulse width"
+                      value={draft.pulseWidth}
+                      onChange={(event) => handleDraftChange("pulseWidth", event.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`${activeComponent.id}-pulse-period`}>Period (s)</Label>
+                    <Input
+                      id={`${activeComponent.id}-pulse-period`}
+                      type="number"
+                      placeholder="Enter period"
+                      value={draft.pulsePeriod}
+                      onChange={(event) => handleDraftChange("pulsePeriod", event.target.value)}
+                    />
+                  </div>
+                </div>
+              ) : null}
               <div className="space-y-2">
                 <Label htmlFor={`${activeComponent.id}-rotation`}>
                   Rotation (°)

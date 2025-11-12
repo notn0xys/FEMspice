@@ -50,11 +50,11 @@ export default function GroundNode({
     onPinPointerDown?.(pinId, event);
   };
 
-  const baseStroke = isDarkMode ? "#f8fafc" : "#1f2937";
+  const baseStroke = isDarkMode ? "#f8fafc" : "#3a3a36";
   const selectionColor = "#3a3a36";
   const strokeColor = isSelected ? selectionColor : baseStroke;
-  const labelColor = isDarkMode ? "#f8fafc" : "#1f2937";
-  const pinStroke = isDarkMode ? "#f8fafc" : "#1f2937";
+  const labelColor = isDarkMode ? "#f8fafc" : "#3a3a36";
+  const pinStroke = isDarkMode ? "#f8fafc" : "#3a3a36";
   const inactivePinFill = isDarkMode ? "#3a3a36" : "#ffffff";
 
   return (
