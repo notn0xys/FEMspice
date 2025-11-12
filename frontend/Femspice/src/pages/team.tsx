@@ -9,9 +9,9 @@ type TeamMember = {
 export default function MeetOurTeam() {
   const team: TeamMember[] = [
     {
-      name: "Person 1 aki ig",
-      image: "/team/",
-      description: "Team Lead & Developer, loves circuits and coding.",
+      name: "Noxu Nyaaa",
+      image: "/team/noxu.jpg",
+      description: "Team Lead Developer, Front end and UI specialist.",
     },
     {
       name: "Thunthanut Teemaethawee",
