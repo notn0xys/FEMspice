@@ -2,6 +2,8 @@ import PySpice
 import PySpice.Logging.Logging as Logging
 from PySpice.Spice.Netlist import Circuit, SubCircuit
 import PySpice.Unit as Unit
+import io
+import matplotlib.pyplot as plt
 
 unit_map = {
     "ohm": Unit.u_Ohm,
@@ -142,29 +144,53 @@ def build_and_simulate_transient(components, step_time, end_time):
     end_time_val = end_time @ Unit.u_s
     analysis = simulator.transient(step_time=step_time_val, end_time=end_time_val)
     
-    print(len(analysis.time))
-    # ---- Extract results ----
-    time_data = [float(t) for t in analysis.time]
-    node_voltages = {}
+    # print(len(analysis.time))
+    # # ---- Extract results ----
+    # time_data = [float(t) for t in analysis.time]
+    # node_voltages = {}
 
-    # Extract voltage for each node
+    # # Extract voltage for each node
+    # for node in circuit.node_names:
+    #     if node == '0':  # skip ground
+    #         continue
+    #     try:
+    #         node_voltages[node] = [float(v) for v in analysis[node]]
+    #     except KeyError:
+    #         logger.warning(f"Node {node} not found in analysis results.")
+
+    # # ---- Prepare frontend payload ----
+    # result = {
+    #     "time": time_data,
+    #     "voltages": node_voltages,
+    #     "metadata": {
+    #         "step_time_us": step_time,
+    #         "end_time_us": end_time,
+    #         "num_points": len(time_data),
+    #     },
+    # }
+
+    # return result
+    plt.figure(figsize=(10, 5))
     for node in circuit.node_names:
-        if node == '0':  # skip ground
+        if node == '0':
             continue
         try:
-            node_voltages[node] = [float(v) for v in analysis[node]]
+            plt.plot(analysis.time, analysis[node], label=f"Node {node}")
         except KeyError:
             logger.warning(f"Node {node} not found in analysis results.")
 
-    # ---- Prepare frontend payload ----
-    result = {
-        "time": time_data,
-        "voltages": node_voltages,
-        "metadata": {
-            "step_time_us": step_time,
-            "end_time_us": end_time,
-            "num_points": len(time_data),
-        },
-    }
+    plt.xlabel("Time (s)")
+    plt.ylabel("Voltage (V)")
+    plt.title("Transient Analysis")
+    plt.legend()
+    plt.grid(True)
 
-    return result
+    # ---- Save figure to bytes ----
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png", bbox_inches="tight")
+    plt.close()
+    buf.seek(0)
+
+    # ---- Return raw image bytes ----
+
+    return buf.getvalue()

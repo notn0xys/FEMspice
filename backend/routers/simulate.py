@@ -1,6 +1,6 @@
 import datetime
 from model.circuit import SimComponent, SimulationRequest, CircuitCreate
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, Response, status, Depends
 import services.simulation as sim
 import utils.translation as translate
 from typing import Annotated
@@ -15,30 +15,30 @@ router = APIRouter(
 )
 
 
-@router.post("/DC", status_code=status.HTTP_200_OK)
-async def simulate_circuit(sim_request: SimulationRequest):
-    if sim_request.mode.lower() == "dc":
-        try:
-            translation_res = translate.convert_frontend_to_netlist(sim_request)
-            result = sim.build_and_simulate_DC(translation_res["components"])
-            return {"result": result, 
-                "mappings": translation_res['mappings'], 
-                'components_mapping': translation_res['components_mapping']}
-        except ValueError as ve:
-            raise HTTPException(status_code=400, detail=str(ve))
-    elif sim_request.mode.lower() == "transient":
-        try:
-            translation_res = translate.convert_frontend_to_netlist(sim_request)
-            result = sim.build_and_simulate_transient(
-                translation_res["components"],
-                sim_request.step_time,
-                sim_request.end_time
-            )
-            return {"result": result}
-        except ValueError as ve:
-            raise HTTPException(status_code=400, detail=str(ve))
-    else:
-        raise HTTPException(status_code=400, detail="Unsupported simulation mode")
+# @router.post("/DC", status_code=status.HTTP_200_OK)
+# async def simulate_circuit(sim_request: SimulationRequest):
+#     if sim_request.mode.lower() == "dc":
+#         try:
+#             translation_res = translate.convert_frontend_to_netlist(sim_request)
+#             result = sim.build_and_simulate_DC(translation_res["components"])
+#             return {"result": result, 
+#                 "mappings": translation_res['mappings'], 
+#                 'components_mapping': translation_res['components_mapping']}
+#         except ValueError as ve:
+#             raise HTTPException(status_code=400, detail=str(ve))
+#     elif sim_request.mode.lower() == "transient":
+#         try:
+#             translation_res = translate.convert_frontend_to_netlist(sim_request)
+#             result = sim.build_and_simulate_transient(
+#                 translation_res["components"],
+#                 sim_request.step_time,
+#                 sim_request.end_time
+#             )
+#             return {"result": result}
+#         except ValueError as ve:
+#             raise HTTPException(status_code=400, detail=str(ve))
+#     else:
+#         raise HTTPException(status_code=400, detail="Unsupported simulation mode")
 
 @router.post("/transcient", status_code=status.HTTP_200_OK)
 async def transient(frontend_data: dict):
@@ -49,7 +49,7 @@ async def transient(frontend_data: dict):
             frontend_data.get("step_time", 50e-6),
             frontend_data.get("end_time", 30e-3)
         )
-        return {"result": result}
+        return Response(content=result, media_type="image/png")
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
 
