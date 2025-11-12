@@ -27,22 +27,28 @@ export default function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
       image: "/tutorial/step3.png",
       title: "Toggle wire mode",
       description:
-        "Switch wire mode on from the top toolbar. Click on a pin to begin routing a connection between components.",
+        "Switch wire mode on from the top toolbar.",
     },
     {
       image: "/tutorial/step4.png",
-      title: "Connect component pins",
+      title: "Draw wires between pins",
       description:
-        "Click a second compatible pin to finish the wire. Press Esc to cancel",
+        "Click on a pin to begin routing a connection between components.",
     },
     {
       image: "/tutorial/step5.png",
+      title: "Draw wires between pins",
+      description:
+        "Click on a second pin to complete the connection. Or Esc to cancel the wire",
+    },
+    {
+      image: "/tutorial/step6.png",
       title: "Edit component properties",
       description:
         "Select a component and use the inspector panel to adjust labels, values, rotation, and pulse settings.",
     },
     {
-      image: "/tutorial/step6.png",
+      image: "/tutorial/step10.png",
       title: "Run a simulation",
       description:
         "Choose DC or transient mode, then click Run. FEMspice normalizes values and sends the schematic to the solver.",
@@ -55,6 +61,12 @@ export default function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
     },
     {
       image: "/tutorial/step8.png",
+      title: "Review voltage or current overlays",
+      description:
+        "After a run, toggle the Voltage/Current buttons to see measurement tags at a glance for each wire or device.",
+    },
+    {
+      image: "/tutorial/step9.png",
       title: "Save or clear your workspace",
       description:
         "Open the Save dialog to store the circuit with a description, or clear the canvas to begin a new draft.",

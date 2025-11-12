@@ -254,6 +254,8 @@ export default function MainPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveDescription, setSaveDescription] = useState("");
   const [searchParams] = useSearchParams();
+  const [graphsrc, setGraphsrc] = useState<string>("");
+  const [isGraphDialogOpen, setIsGraphDialogOpen] = useState(false);
   const openSaveDialog = useCallback(() => {
     setSaveName("");
     setIsSaveDialogOpen(true);
@@ -1050,11 +1052,13 @@ export default function MainPage() {
         }
         throw new Error(`Simulation request failed (${response.status})`);
       }
-      const data = (await response.json()) as SimulationApiResponse;
-      
-      console.log(data);
-    }
-    catch (error) {
+      const blob = await response.blob();
+      console.log("Received blob:", blob);
+      const graphsrc = URL.createObjectURL(blob);
+      console.log("Generated graphsrc URL:", graphsrc);
+      setGraphsrc(graphsrc);
+      setIsGraphDialogOpen(true);
+    } catch (error) {
       toast.error("Unable to run the Transcient simulation. Please try again.");
     }
   }
@@ -1201,7 +1205,11 @@ export default function MainPage() {
 
   const handleKeyDown = (event: KeyboardEvent) => {
     const activeElement = typeof document !== "undefined" ? document.activeElement : null;
-    if (isEditableElement(activeElement)) {
+    if (
+      isEditableElement(activeElement) ||
+      isSaveDialogOpen ||
+      Boolean(inspectorId)
+    ) {
       return;
     }
 
@@ -1250,7 +1258,7 @@ export default function MainPage() {
 
   window.addEventListener("keydown", handleKeyDown);
   return () => window.removeEventListener("keydown", handleKeyDown);
-}, [selectedWireId]);
+}, [selectedWireId, isSaveDialogOpen, inspectorId]);
   //Rotate
   useEffect(() => {
     if (!selectedId) return;
@@ -1277,6 +1285,15 @@ export default function MainPage() {
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      const activeElement = typeof document !== "undefined" ? document.activeElement : null;
+      if (
+        isEditableElement(activeElement) ||
+        isSaveDialogOpen ||
+        Boolean(inspectorId)
+      ) {
+        return;
+      }
+
       if (event.key !== "Backspace" && event.key !== "Delete") {
         return;
       }
@@ -1318,7 +1335,7 @@ export default function MainPage() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedId]);
+  }, [selectedId, isSaveDialogOpen, inspectorId]);
 
   const handleNodeContextMenu = useCallback(
     (componentId: string, event: KonvaEventObject<PointerEvent>) => {
@@ -1853,6 +1870,16 @@ export default function MainPage() {
           ) : null}
         </Stage>
       </div>
+      <Dialog open={isGraphDialogOpen} onOpenChange={setIsGraphDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Graph</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            <img src={graphsrc} alt="Graph" />
+          </DialogDescription>
+        </DialogContent>
+      </Dialog>
       <Dialog
         open={isSaveDialogOpen}
         onOpenChange={setIsSaveDialogOpen}>
