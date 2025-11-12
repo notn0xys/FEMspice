@@ -7,7 +7,7 @@
 // } from "../components/ui/card";
 import { useState, useEffect } from "react";
 // import { Button } from "../components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -26,7 +26,21 @@ type Circuit = {
 };
 
 export default function Profile() {
+
+  //use for fetching
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const currentId = searchParams.get("id");
+
+  const handleGoBack = () => {
+    if (currentId) {
+      navigate(`/home?id=${currentId}`);
+    } else {
+      navigate("/home");
+    }
+  };
 
   const [user, setUser] = useState<User>({
     id: "",
@@ -94,11 +108,10 @@ export default function Profile() {
     fetchCircuits();
   }, [navigate]);
 
-
+  //end of fetching
   return (
     <div className="w-screen h-screen flex items-center justify-center ">
       <div className="w-7/10 min-w-5xl h-[500px] flex overflow-hidden rounded-xl shadow-lg bg-gray-50 dark:bg-gray-800">
-        {/* Sidebar */}
         <div className="w-64 bg-white dark:bg-gray-700 shadow-md p-4 flex flex-col">
           <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-6 text-center">
             My Profile
@@ -138,7 +151,18 @@ export default function Profile() {
               Settings
             </button>
           </nav>
+
+          <div className="pt-4 border-t border-gray-300 dark:border-gray-600 mt-4">
+            <button
+              onClick={handleGoBack}
+              className="w-full text-left px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-600"
+            >
+              ⬅ Go Back
+            </button>
+          </div>
         </div>
+
+        
 
         {/* Main Content Area */}
         <div className="flex-1 p-8 overflow-y-auto">
@@ -205,7 +229,7 @@ function CreationsTab({
           {circuitList.map((circuit) => (
             <li
               key={circuit.id}
-              onClick={() => navigate(`/main/?id=${circuit.id}`)}
+              onClick={() => navigate(`/main?id=${circuit.id}`)}
               className="p-4 border border-gray-200 dark:border-gray-700 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
               <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400">
