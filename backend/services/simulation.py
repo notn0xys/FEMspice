@@ -112,6 +112,7 @@ def build_and_simulate_transient(components, step_time, end_time):
     circuit = Circuit('Generated Circuit')
 
     for comp in components:
+        print(comp.type)
         value_with_unit = convert_to_pyspice(comp.value, comp.prefix, comp.unit)
         if comp.type == "R":
             circuit.R(comp.name, comp.node1, comp.node2, value_with_unit)
@@ -123,7 +124,7 @@ def build_and_simulate_transient(components, step_time, end_time):
             circuit.L(comp.name, comp.node1, comp.node2, value_with_unit)
         elif comp.type == "I":
             circuit.I(comp.name, comp.node1, comp.node2, value_with_unit)
-        elif comp.type=="PV": ## pulse voltage source
+        elif comp.type== "PV": 
             initial_value = convert_to_pyspice(comp.initial_value[0], comp.initial_value[1], comp.initial_value[2])
             pulse_value = convert_to_pyspice(comp.pulse_value, "", "volt")
             circuit.PulseVoltageSource(comp.name, 

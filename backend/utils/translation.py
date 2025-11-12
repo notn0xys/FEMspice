@@ -137,6 +137,5 @@ def convert_frontend_to_netlist(frontend_data):
         parsed_components.append(temp)
 
     json_safe_map = {f"{k[0]}:{k[1]}": v for k, v in net_name_map.items()}
-    # print(parsed_components)
     return {"components": parsed_components, "mappings": json_safe_map, 'components_mapping': comp_mapping}
 
