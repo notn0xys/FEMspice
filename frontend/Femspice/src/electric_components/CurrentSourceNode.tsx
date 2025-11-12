@@ -134,13 +134,13 @@ export default function CurrentSourceNode({
         lineCap="round"
       />
       <Line
-        points={[0, -8, -4, -2]}
+        points={[0, 8, -4, 2]}
         stroke={symbolColor}
         strokeWidth={2}
         lineCap="round"
       />
       <Line
-        points={[0, -8, 4, -2]}
+        points={[0, 8, 4, 2]}
         stroke={symbolColor}
         strokeWidth={2}
         lineCap="round"

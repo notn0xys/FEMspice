@@ -250,9 +250,9 @@ export default function MainPage() {
   );
   const { wireMode, toggleWireMode } = useWireMode();
   const wireColor = isDarkMode ? "#ffffff" : "#000000ff";
-  const measurementTagFill = isDarkMode ? "rgba(0,0,0,0.85)" : "rgba(15,23,42,0.85)";
-  const measurementTagStroke = isDarkMode ? "rgba(148,163,184,0.4)" : "rgba(148,163,184,0.6)";
-  const measurementTextColor = isDarkMode ? "#f8fafc" : "#0f172a";
+  const measurementTagFill = isDarkMode ? "rgba(0,0,0,0.85)" : "rgba(255, 255, 255, 0.85)";
+  const measurementTagStroke = isDarkMode ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.6)";
+  const measurementTextColor = isDarkMode ? "#f8fafc" : "#000000ff";
   const previousWireColorRef = useRef(wireColor);
   useEffect(() => {
     if (typeof document === "undefined") {
