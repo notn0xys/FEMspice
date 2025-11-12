@@ -1,5 +1,7 @@
-import { Group, Line, Rect, Text, Circle } from 'react-konva';
+import { useEffect, useState } from 'react';
+import { Group, Line, Rect, Text, Circle, Image as KonvaImage } from 'react-konva';
 import type Konva from 'konva';
+import resistorIcon from '@/assets/componentsIcons/Resistor.png';
 
 interface ResistorNodeProps {
   x?: number;
@@ -41,6 +43,16 @@ export default function ResistorNode({
   onContextMenu,
 }: ResistorNodeProps) {
   const label = typeof resistance === 'number' ? `${resistance}Ω` : resistance;
+  const [iconImage, setIconImage] = useState<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const img = new window.Image();
+    img.src = resistorIcon;
+    img.onload = () => setIconImage(img);
+    return () => {
+      img.onload = null;
+    };
+  }, []);
 
   const handlePinEvent = (pinId: string) => (
     event: Konva.KonvaEventObject<MouseEvent | TouchEvent>
@@ -115,32 +127,43 @@ export default function ResistorNode({
       />
 
       {/* Icon inside resistor */}
-      <Line
-        points={[
-          -RESISTOR_WIDTH / 2 + RESISTOR_ICON_MARGIN,
-          0,
-          -RESISTOR_WIDTH / 2 + 14,
-          -RESISTOR_HEIGHT / 2 + 4,
-          -RESISTOR_WIDTH / 2 + 22,
-          RESISTOR_HEIGHT / 2 - 4,
-          -RESISTOR_WIDTH / 2 + 30,
-          -RESISTOR_HEIGHT / 2 + 4,
-          -RESISTOR_WIDTH / 2 + 38,
-          RESISTOR_HEIGHT / 2 - 4,
-          -RESISTOR_WIDTH / 2 + 46,
-          -RESISTOR_HEIGHT / 2 + 4,
-          -RESISTOR_WIDTH / 2 + 54,
-          RESISTOR_HEIGHT / 2 - 4,
-          -RESISTOR_WIDTH / 2 + 62,
-          -RESISTOR_HEIGHT / 2 + 4,
-          RESISTOR_WIDTH / 2 - RESISTOR_ICON_MARGIN,
-          0,
-        ]}
-        stroke="#1f2937"
-        strokeWidth={2}
-        lineJoin="round"
-        lineCap="round"
-      />
+      {iconImage ? (
+        <KonvaImage
+          image={iconImage}
+          x={-RESISTOR_WIDTH / 2 + RESISTOR_ICON_MARGIN}
+          y={-RESISTOR_HEIGHT / 2 + RESISTOR_ICON_MARGIN}
+          width={RESISTOR_WIDTH - RESISTOR_ICON_MARGIN * 2}
+          height={RESISTOR_HEIGHT - RESISTOR_ICON_MARGIN * 2}
+          listening={false}
+        />
+      ) : (
+        <Line
+          points={[
+            -RESISTOR_WIDTH / 2 + RESISTOR_ICON_MARGIN,
+            0,
+            -RESISTOR_WIDTH / 2 + 14,
+            -RESISTOR_HEIGHT / 2 + 4,
+            -RESISTOR_WIDTH / 2 + 22,
+            RESISTOR_HEIGHT / 2 - 4,
+            -RESISTOR_WIDTH / 2 + 30,
+            -RESISTOR_HEIGHT / 2 + 4,
+            -RESISTOR_WIDTH / 2 + 38,
+            RESISTOR_HEIGHT / 2 - 4,
+            -RESISTOR_WIDTH / 2 + 46,
+            -RESISTOR_HEIGHT / 2 + 4,
+            -RESISTOR_WIDTH / 2 + 54,
+            RESISTOR_HEIGHT / 2 - 4,
+            -RESISTOR_WIDTH / 2 + 62,
+            -RESISTOR_HEIGHT / 2 + 4,
+            RESISTOR_WIDTH / 2 - RESISTOR_ICON_MARGIN,
+            0,
+          ]}
+          stroke="#1f2937"
+          strokeWidth={2}
+          lineJoin="round"
+          lineCap="round"
+        />
+      )}
 
       {/* Label */}
       <Text

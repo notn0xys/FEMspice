@@ -1,5 +1,5 @@
 import type { ComponentType, DragEvent } from "react"
-import { Settings, Zap } from "lucide-react"
+import { Activity, Settings, Zap } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -17,14 +17,15 @@ import capacitorIcon from "@/assets/componentsIcons/capacitor.png"
 import inductorIcon from "@/assets/componentsIcons/inductor.png"
 import resistorIcon from "@/assets/componentsIcons/Resistor.png"
 import{ Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { useEffect, useState, useCallback } from "react"
+import { Link, useNavigate } from "react-router-dom"
 type AppSidebarProps = {
   onRunCircuit?: () => void
   mode?: "dc" | "ac"
   onModeChange?: (mode: "dc" | "ac") => void
   onSaveCircuit?: () => void
   onClearCircuit?: () => void
+  id ?: string
 }
 
 type ComponentPaletteItem = {
@@ -64,13 +65,20 @@ const componentPalette: ComponentPaletteItem[] = [
     imageSrc: inductorIcon,
   },
   {
+    title: "Current Source",
+    type: "currentSource",
+    value: 5,
+    icon: Activity,
+  },
+  {
     title: "Ground",
     type: "ground",
     icon: Settings,
   },
 ]
 
-export function AppSidebar({ onSaveCircuit, onClearCircuit, onRunCircuit, mode = "dc", onModeChange }: AppSidebarProps) {
+export function AppSidebar({ id , onSaveCircuit, onClearCircuit, onRunCircuit, mode = "dc", onModeChange }: AppSidebarProps) {
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("User");
   useEffect(() => {
     const storedName = localStorage.getItem("sub");
@@ -79,7 +87,11 @@ export function AppSidebar({ onSaveCircuit, onClearCircuit, onRunCircuit, mode =
     }
   }, []);
   const { wireMode, toggleWireMode } = useWireMode();
-
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
   const handleDragStart = (
     event: DragEvent<HTMLButtonElement>,
     component: ComponentPaletteItem
@@ -90,7 +102,11 @@ export function AppSidebar({ onSaveCircuit, onClearCircuit, onRunCircuit, mode =
     )
     event.dataTransfer.effectAllowed = "move"
   }
-
+  const onLogout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("sub");
+    navigate("/login", { replace: true });
+  }, [navigate]);
   return (
     <Sidebar>
       <SidebarContent>
@@ -167,8 +183,8 @@ export function AppSidebar({ onSaveCircuit, onClearCircuit, onRunCircuit, mode =
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center gap-3">
-          <Link to="/profile">
+        <div className="flex items-center gap-3 w-full">
+          <Link to={`/profile?id=${id}`}>
             <Avatar className="h-10 w-10">
               <AvatarImage src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${displayName}`} alt={displayName} />
               <AvatarFallback>{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -178,6 +194,7 @@ export function AppSidebar({ onSaveCircuit, onClearCircuit, onRunCircuit, mode =
             <p className="text-xs text-muted-foreground">Hi,</p>
             <p className="truncate text-sm font-medium">{displayName}</p>
           </div>
+          <Button variant="outline" className="ml-auto" onClick={onLogout}>Logout</Button>
         </div>
       </SidebarFooter>
     </Sidebar>

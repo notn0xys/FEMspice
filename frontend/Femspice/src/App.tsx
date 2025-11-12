@@ -7,6 +7,8 @@ import Signup from './pages/signup'
 import Profile from './pages/profile'
 import { useEffect } from 'react';
 import PublicRoute from './routes/PublicRoute';
+import UserRoute from './routes/UserRoute'
+import { Toaster } from '@/components/ui/sonner';
 function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -25,10 +27,11 @@ function App() {
         <Route path='/' element = {<PublicRoute><Login/></PublicRoute>}/>
         <Route path='/login' element = {<PublicRoute><Login/></PublicRoute>}/>
         <Route path='/about' element = {<PublicRoute><About/></PublicRoute>}/>
-        <Route path='/home' element = {<PublicRoute><MainPage/></PublicRoute>}/>
+        <Route path='/home' element = {<UserRoute><MainPage/></UserRoute>}/>
         <Route path='/signup' element = {<PublicRoute><Signup/></PublicRoute>}/>
         <Route path='/profile' element = {<PublicRoute><Profile/></PublicRoute>}/>
       </Routes>
+      <Toaster position="top-right" richColors closeButton />
     </div>
   )
 }
