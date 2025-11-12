@@ -45,6 +45,19 @@ import { useTheme } from "next-themes";
 
 const DRAG_DATA_MIME = "application/femspice-component";
 
+const LIGHT_WIRE_COLOR = "#000000";
+const DARK_WIRE_COLOR = "#f8fafc";
+const DEFAULT_WIRE_COLORS = new Set([
+  LIGHT_WIRE_COLOR,
+  DARK_WIRE_COLOR,
+  "#000000",
+  "#000000ff",
+  "#ffffff",
+]);
+
+const normalizeColorHex = (value?: string | null) =>
+  (value ?? "").trim().toLowerCase();
+
 
 const PIN_DEFINITIONS = {
   resistor: RESISTOR_PIN_OFFSETS,
@@ -265,7 +278,7 @@ export default function MainPage() {
     [components, inspectorId],
   );
   const { wireMode, toggleWireMode } = useWireMode();
-  const wireColor = isDarkMode ? "#ffffff" : "#000000ff";
+  const wireColor = isDarkMode ? DARK_WIRE_COLOR : LIGHT_WIRE_COLOR;
   const measurementTagFill = isDarkMode ? "rgba(0,0,0,0.85)" : "rgba(255, 255, 255, 0.85)";
   const measurementTagStroke = isDarkMode ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.6)";
   const measurementTextColor = isDarkMode ? "#f8fafc" : "#000000ff";
@@ -292,15 +305,16 @@ export default function MainPage() {
   useEffect(() => {
     const previousWireColor = previousWireColorRef.current;
     const knownDefaults = new Set([
-      previousWireColor,
-      "#1f2937",
-      "#000000ff",
-      "#ffffff",
+      ...DEFAULT_WIRE_COLORS,
+      normalizeColorHex(previousWireColor),
     ]);
 
     setWires((prevWires) =>
       prevWires.map((wire) => {
-        if (!wire.color || knownDefaults.has(wire.color)) {
+        const wireColorKey = normalizeColorHex(
+          typeof wire.color === "string" ? wire.color : undefined,
+        );
+        if (!wire.color || knownDefaults.has(wireColorKey)) {
           return { ...wire, color: wireColor };
         }
         return wire;
@@ -312,7 +326,8 @@ export default function MainPage() {
         return prevDraft;
       }
 
-      if (!prevDraft.color || knownDefaults.has(prevDraft.color)) {
+      const draftColorKey = normalizeColorHex(prevDraft.color);
+      if (!prevDraft.color || knownDefaults.has(draftColorKey)) {
         return { ...prevDraft, color: wireColor };
       }
 
@@ -412,10 +427,17 @@ export default function MainPage() {
         setComponents(normalizedComponents);
         const normalizedWires: CanvasWire[] = (data.wires ?? []).map((wire: any) => {
           const { from_, ...rest } = wire;
+          const savedColor =
+            typeof wire.color === "string" ? wire.color : undefined;
+          const normalizedColor =
+            savedColor &&
+            !DEFAULT_WIRE_COLORS.has(normalizeColorHex(savedColor))
+              ? savedColor
+              : wireColor;
           return {
             ...rest,
             from: from_,
-            color: wire.color ?? wireColor,
+            color: normalizedColor,
           };
         });
         setWires(normalizedWires);
