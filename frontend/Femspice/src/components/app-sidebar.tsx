@@ -17,11 +17,14 @@ import capacitorIcon from "@/assets/componentsIcons/capacitor.png"
 import capacitorIconWhite from "@/assets/componentsIcons/capcitor_white.png"
 import inductorIcon from "@/assets/componentsIcons/inductor.png"
 import inductorIconWhite from "@/assets/componentsIcons/inductor_white.png"
+import pulseSourceIcon from "@/assets/componentsIcons/pulse_source.png"
+import pulseSourceIconWhite from "@/assets/componentsIcons/pulse_source_white.png"
 import resistorIcon from "@/assets/componentsIcons/Resistor.png"
 import resistorIconWhite from "@/assets/componentsIcons/Resistor_white.png"
 import{ Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useEffect, useState, useCallback, useMemo } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import type { PulseSettings } from "@/electric_components/PulseVoltageSourceNode"
 type AppSidebarProps = {
   onRunCircuit?: () => void
   mode?: "dc" | "ac"
@@ -38,6 +41,7 @@ type ComponentPaletteItem = {
   icon?: ComponentType<{ className?: string }>
   imageSrc?: string
   imageSrcDark?: string
+  pulseSettings?: PulseSettings
 }
 
 
@@ -76,6 +80,18 @@ const componentPalette: ComponentPaletteItem[] = [
     type: "currentSource",
     value: 5,
     icon: Activity,
+  },
+  {
+    title: "Pulse Voltage Source",
+    type: "pulseVoltageSource",
+    imageSrc: pulseSourceIcon,
+    imageSrcDark: pulseSourceIconWhite,
+    pulseSettings: {
+      initialValue: 0,
+      pulseValue: 10,
+      pulseWidth: 0.01,
+      period: 0.02,
+    },
   },
   {
     title: "Ground",
@@ -140,7 +156,12 @@ export function AppSidebar({ id , onSaveCircuit, onClearCircuit, onRunCircuit, m
   ) => {
     event.dataTransfer.setData(
       "application/femspice-component",
-      JSON.stringify({ type: component.type, value: component.value, title: component.title })
+      JSON.stringify({
+        type: component.type,
+        value: component.value,
+        title: component.title,
+        pulseSettings: component.pulseSettings,
+      })
     )
     event.dataTransfer.effectAllowed = "move"
   }

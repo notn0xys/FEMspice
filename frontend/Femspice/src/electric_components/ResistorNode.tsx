@@ -67,13 +67,13 @@ export default function ResistorNode({
   };
 
   const selectionColor = "#3a3a36";
-  const baseStroke = isDarkMode ? "#f8fafc" : "#1f2937";
+  const baseStroke = isDarkMode ? "#f8fafc" : "#3a3a36";
   const strokeColor = isSelected ? selectionColor : baseStroke;
-  const leadColor = isDarkMode ? "#f8fafc" : "#1f2937";
+  const leadColor = isDarkMode ? "#f8fafc" : "#3a3a36";
   const labelColor = isDarkMode ? "#f8fafc" : "black";
   const bodyFill = isDarkMode ? "#3a3a36" : "#ffffff";
   const inactivePinFill = isDarkMode ? "#3a3a36" : "#ffffff";
-  const pinStroke = isDarkMode ? "#f8fafc" : "#1f2937";
+  const pinStroke = isDarkMode ? "#f8fafc" : "#3a3a36";
 
   return (
     <Group
