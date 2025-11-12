@@ -103,14 +103,14 @@ def convert_frontend_to_netlist(frontend_data):
         comp_name = f"{comp_type}{type_counters[comp_type]}"
         comp_mapping[comp["id"]] = comp_name
 
-        if comp_type == "I":
+        # if comp_type == "I":
 
-            print("CURRENT SOURCE")
-            print(node1)
-            print((comp["id"], pins[0]))
-            print(node2)
-            print((comp["id"], pins[1]))
-            print()
+        #     print("CURRENT SOURCE")
+        #     print(node1)
+        #     print((comp["id"], pins[0]))
+        #     print(node2)
+        #     print((comp["id"], pins[1]))
+        #     print()
 
 
         temp = SimComponent(
