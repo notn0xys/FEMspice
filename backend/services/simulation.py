@@ -103,24 +103,66 @@ def build_and_simulate_DC(components):
 
     return {"node_voltages": results, "component_currents": component_currents}
 
-# def build_and_simulate_transient(components, step_time, end_time):
-#     logger = Logging.setup_logging()
-#     circuit = Circuit('Generated Circuit')
+def build_and_simulate_transient(components, step_time, end_time):
+    logger = Logging.setup_logging()
+    circuit = Circuit('Generated Circuit')
 
-#     for comp in components:
-#         value_with_unit = convert_to_pyspice(comp.value, comp.prefix, comp.unit)
-#         if comp.type == "R":
-#             circuit.R(comp.name, comp.node1, comp.node2, value_with_unit)
-#         elif comp.type == "V":
-#             circuit.V(comp.name, comp.node1, comp.node2, value_with_unit)
-#         elif comp.type == "C":
-#             circuit.C(comp.name, comp.node1, comp.node2, value_with_unit)
-#         elif comp.type == "L":
-#             circuit.L(comp.name, comp.node1, comp.node2, value_with_unit)
-#         elif comp.type == "I":
-#             circuit.I(comp.name, comp.node1, comp.node2, value_with_unit)
-#         elif comp.type=="PV": ## pulse voltage source
-#             pass
+    for comp in components:
+        value_with_unit = convert_to_pyspice(comp.value, comp.prefix, comp.unit)
+        if comp.type == "R":
+            circuit.R(comp.name, comp.node1, comp.node2, value_with_unit)
+        elif comp.type == "V":
+            circuit.V(comp.name, comp.node1, comp.node2, value_with_unit)
+        elif comp.type == "C":
+            circuit.C(comp.name, comp.node1, comp.node2, value_with_unit)
+        elif comp.type == "L":
+            circuit.L(comp.name, comp.node1, comp.node2, value_with_unit)
+        elif comp.type == "I":
+            circuit.I(comp.name, comp.node1, comp.node2, value_with_unit)
+        elif comp.type=="PV": ## pulse voltage source
+            initial_value = convert_to_pyspice(comp.initial_value[0], comp.initial_value[1], comp.initial_value[2])
+            pulse_value = convert_to_pyspice(comp.pulse_value, "", "volt")
+            circuit.PulseVoltageSource(comp.name, 
+                                        comp.node1,
+                                        comp.node2, 
+                                        initial_value, 
+                                        pulse_value, 
+                                        pulse_width=comp.pulse_width@Unit.u_s, 
+                                        period=comp.period@Unit.u_s)
             
-#         else:
-#             raise ValueError(f"Unsupported component type: {comp.type}")
+        else:
+            raise ValueError(f"Unsupported component type: {comp.type}")
+        
+    simulator = circuit.simulator(temperature=25, nominal_temperature=25)
+
+    # ---- Run transient analysis ----
+    step_time_val = step_time @ Unit.u_s
+    end_time_val = end_time @ Unit.u_s
+    analysis = simulator.transient(step_time=step_time_val, end_time=end_time_val)
+    
+    print(len(analysis.time))
+    # ---- Extract results ----
+    time_data = [float(t) for t in analysis.time]
+    node_voltages = {}
+
+    # Extract voltage for each node
+    for node in circuit.node_names:
+        if node == '0':  # skip ground
+            continue
+        try:
+            node_voltages[node] = [float(v) for v in analysis[node]]
+        except KeyError:
+            logger.warning(f"Node {node} not found in analysis results.")
+
+    # ---- Prepare frontend payload ----
+    result = {
+        "time": time_data,
+        "voltages": node_voltages,
+        "metadata": {
+            "step_time_us": step_time,
+            "end_time_us": end_time,
+            "num_points": len(time_data),
+        },
+    }
+
+    return result
