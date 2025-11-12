@@ -1586,7 +1586,6 @@ export default function MainPage() {
         throw new Error(`Failed to save circuit (${response.status})`);
       }
 
-      const data = await response.json();
       toast.success("Circuit saved successfully!");
 
       setIsSaveDialogOpen(false);
