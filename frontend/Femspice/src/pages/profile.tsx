@@ -140,7 +140,7 @@ export default function Profile() {
               My Creations
             </button>
 
-            <button
+            {/* <button
               onClick={() => setActiveTab("settings")}
               className={`text-left px-4 py-2 rounded-md font-medium transition ${
                 activeTab === "settings"
@@ -149,7 +149,7 @@ export default function Profile() {
               }`}
             >
               Settings
-            </button>
+            </button> */}
           </nav>
 
           <div className="pt-4 border-t border-gray-300 dark:border-gray-700 mt-4">
