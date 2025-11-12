@@ -190,10 +190,10 @@ function AccountTab({ user }: { user: User }) {
         className="w-24 h-24 rounded-full shadow-md mb-3"
       />
       <p className="text-gray-700 dark:text-gray-300 mb-2">
-        <strong>Name:</strong> {user.username}
+        <strong>Username:</strong> {user.username}
       </p>
       <p className="text-gray-700 dark:text-gray-300 mb-2">
-        <strong>Name:</strong> {user.full_name}
+        <strong>Full Name:</strong> {user.full_name}
       </p>
       <p className="text-gray-700 dark:text-gray-300 mb-2">
         <strong>Email:</strong> {user.email}
