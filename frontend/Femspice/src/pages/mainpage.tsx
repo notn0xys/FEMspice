@@ -204,6 +204,22 @@ const getWireLabelPosition = (points: number[]): { x: number; y: number } | null
 const formatVoltage = (value: number) => `${value.toFixed(3)} V`;
 const formatCurrent = (value: number) => `${value.toFixed(3)} A`;
 
+const isEditableElement = (element: Element | null): boolean => {
+  if (!element) {
+    return false;
+  }
+
+  if (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement
+  ) {
+    return true;
+  }
+
+  return element instanceof HTMLElement ? element.isContentEditable : false;
+};
+
 
 export default function MainPage() {
   const { theme } = useTheme();
@@ -478,6 +494,11 @@ export default function MainPage() {
     if (!draftWire) return;
 
     const handler = (event: KeyboardEvent) => {
+        const activeElement = typeof document !== "undefined" ? document.activeElement : null;
+        if (isEditableElement(activeElement)) {
+          return;
+        }
+
       if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
         setDraftWire((prev) =>
           prev && prev.points.length > 4
@@ -854,10 +875,14 @@ export default function MainPage() {
   }, [components, measurementMode, simulationResult]);
 
   const handleRunCircuit = useCallback(async () => {
-    const payload = {
-      mode: circuitMode,
-      components: components.map((component) => {
-        const base = {
+    let simulateAC = false;
+    if (circuitMode !== "dc" ) {
+      simulateAC = true;
+    }
+    if (!simulateAC) {
+      const payload = {
+        components: components.map((component) => {
+          const base = {
           id: component.id,
           type: component.type,
           position: { x: component.x, y: component.y },
@@ -939,6 +964,79 @@ export default function MainPage() {
       console.error(error);
       console.groupEnd();
     }
+    }
+
+    else {
+      const payload = {
+        components: components.map((component) => {
+          const base = {
+          id: component.id,
+          type: component.type,
+          position: { x: component.x, y: component.y },
+          rotation: component.rotation,
+          value: component.value ?? null,
+          title: component.title ?? null,
+          connections: component.connections,
+        };
+        if (component.type === "pulseVoltageSource") {
+          const initialValue =
+            component.pulseSettings?.initialValue ?? component.value ?? 0;
+
+          return {
+            ...base,
+            value: initialValue ?? null,
+            initial_value: [initialValue ?? 0, "", "volt"],
+            pulse_value: component.pulseSettings?.pulseValue ?? null,
+            pulse_width: component.pulseSettings?.pulseWidth ?? null,
+            period: component.pulseSettings?.period ?? null,
+          };
+        }
+        return base;
+      }),
+      wires: wires.map((wire) => ({
+        id: wire.id,
+        from: wire.from,
+        to: wire.to,
+        points: wire.points,
+        color: wire.color ?? wireColor,
+      })),
+      step_time: 1e-04,
+      end_time: 0.03
+    };
+    setSimulationResult(null);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/simulate/transcient", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      console.log("Simulation request payload:", payload);
+      if (!response.ok) {
+        if (response.status === 400) {
+          let message = "No ground detected. Add a ground component and try again.";
+          try {
+            const errorBody = await response.json();
+            const detail = errorBody?.detail;
+            toast.error(detail || message, { duration: 4000 });
+            return;
+          } catch (parseError) {
+            console.debug("Failed to parse 400 response", parseError);
+          }
+          toast.error(message, { duration: 4000 });
+          return;
+        }
+        throw new Error(`Simulation request failed (${response.status})`);
+      }
+      const data = (await response.json()) as SimulationApiResponse;
+      
+      console.log(data);
+    }
+    catch (error) {
+      toast.error("Unable to run the Transcient simulation. Please try again.");
+    }
+  }
+
   }, [components, wires, circuitMode, applySimulationResult]);
 
   const handleDraftChange = useCallback(
@@ -1080,6 +1178,11 @@ export default function MainPage() {
   if (!selectedWireId) return;
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    const activeElement = typeof document !== "undefined" ? document.activeElement : null;
+    if (isEditableElement(activeElement)) {
+      return;
+    }
+
     if (event.key !== "Delete" && event.key !== "Backspace") return;
 
     setWires((prevWires) => {

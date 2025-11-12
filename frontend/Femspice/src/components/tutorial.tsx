@@ -10,31 +10,67 @@ export default function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
 
   if (!isOpen) return null;
 
-  //pur your image path here uhhh just hardcode the desc.
-  const images = [
-    "/tutorial/step1.png",
-    "/tutorial/step2.png",
-    "/tutorial/step3.png",
-    "/tutorial/step4.png",
-    "/tutorial/step5.png",
-    "/tutorial/step6.png",
-  ];
-
-  const descriptions = [
-    "Step 1: tutorial 1.",
-    "Step 2: tutorial 2.",
-    "Step 3: tutorial 3.",
-    "Step 4: tutorial 4.",
-    "Step 5: tutorial 5.",
-    "Step 6: tutorial 6.",
+  const tutorialSteps = [
+    {
+      image: "/tutorial/step1-open-library.png",
+      title: "Open the component library",
+      description:
+        "Use the sidebar to browse fundamental elements. Drag any part onto the canvas to start building your schematic.",
+    },
+    {
+      image: "/tutorial/step2-drop-component.png",
+      title: "Place your first component",
+      description:
+        "Drop a resistor, source, or ground onto the grid. Components snap to the canvas so alignment stays clean.",
+    },
+    {
+      image: "/tutorial/step3-wire-mode.png",
+      title: "Toggle wire mode",
+      description:
+        "Switch wire mode on from the top toolbar. Click on a pin to begin routing a connection between components.",
+    },
+    {
+      image: "/tutorial/step4-complete-wire.png",
+      title: "Connect component pins",
+      description:
+        "Click a second compatible pin to finish the wire. Press Esc to cancel",
+    },
+    {
+      image: "/tutorial/step5-edit-properties.png",
+      title: "Edit component properties",
+      description:
+        "Select a component and use the inspector panel to adjust labels, values, rotation, and pulse settings.",
+    },
+    {
+      image: "/tutorial/step6-run-simulation.png",
+      title: "Run a simulation",
+      description:
+        "Choose DC or transient mode, then click Run. FEMspice normalizes values and sends the schematic to the solver.",
+    },
+    {
+      image: "/tutorial/step7-view-results.png",
+      title: "Review voltage or current overlays",
+      description:
+        "After a run, toggle the Voltage/Current buttons to see measurement tags at a glance for each wire or device.",
+    },
+    {
+      image: "/tutorial/step8-save-circuit.png",
+      title: "Save or clear your workspace",
+      description:
+        "Open the Save dialog to store the circuit with a description, or clear the canvas to begin a new draft.",
+    },
   ];
 
   const prevItem = () => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentIndex((prev) =>
+      prev === 0 ? tutorialSteps.length - 1 : prev - 1,
+    );
   };
 
   const nextItem = () => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrentIndex((prev) =>
+      prev === tutorialSteps.length - 1 ? 0 : prev + 1,
+    );
   };
 
   return (
@@ -54,16 +90,19 @@ export default function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
         <div className="flex">
           <div className="flex-[0.65] pr-4">
             <img
-              src={images[currentIndex]}
+              src={tutorialSteps[currentIndex]?.image}
               alt={`Tutorial step ${currentIndex + 1}`}
               className="w-full max-h-[70vh] object-contain rounded"
             />
           </div>
 
           <div className="flex-[0.35] pl-4 flex items-center">
-            <p className="text-gray-700 dark:text-gray-300">
-              {descriptions[currentIndex]}
-            </p>
+            <div className="space-y-3 text-gray-700 dark:text-gray-300">
+              <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                {tutorialSteps[currentIndex]?.title}
+              </p>
+              <p>{tutorialSteps[currentIndex]?.description}</p>
+            </div>
           </div>
         </div>
 
@@ -75,7 +114,7 @@ export default function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
             ←
           </button>
           <p className="text-sm text-gray-700 dark:text-gray-300">
-            {currentIndex + 1} / {images.length}
+            {currentIndex + 1} / {tutorialSteps.length}
           </p>
           <button
             onClick={nextItem}

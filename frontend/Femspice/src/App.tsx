@@ -5,7 +5,6 @@ import About from './pages/about'
 import MainPage from './pages/mainpage'
 import Signup from './pages/signup'
 import Profile from './pages/profile'
-import TutorialTest from './pages/tutorialtest'
 import MeetOurTeam from './pages/team'
 import Landing from './pages/landing'
 import { useEffect } from 'react';
@@ -32,8 +31,7 @@ function App() {
         <Route path='/about' element = {<PublicRoute><About/></PublicRoute>}/>
         <Route path='/home' element = {<UserRoute><MainPage/></UserRoute>}/>
         <Route path='/signup' element = {<PublicRoute><Signup/></PublicRoute>}/>
-        <Route path='/profile' element = {<PublicRoute><Profile/></PublicRoute>}/>
-        <Route path="/tutorial-test" element={<PublicRoute><TutorialTest /></PublicRoute>} />
+        <Route path='/profile' element = {<UserRoute><Profile/></UserRoute>}/>
         <Route path="/team" element={<PublicRoute><MeetOurTeam /></PublicRoute>} />
         <Route path='/landing' element = {<PublicRoute><Landing/></PublicRoute>}/>
 
