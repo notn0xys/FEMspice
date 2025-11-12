@@ -56,6 +56,8 @@ def build_and_simulate_DC(components):
         else:
             raise ValueError(f"Unsupported component type: {comp.type}")
 
+    print("CIRCUIT")
+    print(circuit)
     simulator = circuit.simulator(temperature=25, nominal_temperature=25)
     analysis = simulator.operating_point()
 
