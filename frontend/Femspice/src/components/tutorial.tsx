@@ -12,49 +12,49 @@ export default function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
 
   const tutorialSteps = [
     {
-      image: "/tutorial/step1-open-library.png",
+      image: "/tutorial/step1.png",
       title: "Open the component library",
       description:
         "Use the sidebar to browse fundamental elements. Drag any part onto the canvas to start building your schematic.",
     },
     {
-      image: "/tutorial/step2-drop-component.png",
+      image: "/tutorial/step2.png",
       title: "Place your first component",
       description:
         "Drop a resistor, source, or ground onto the grid. Components snap to the canvas so alignment stays clean.",
     },
     {
-      image: "/tutorial/step3-wire-mode.png",
+      image: "/tutorial/step3.png",
       title: "Toggle wire mode",
       description:
         "Switch wire mode on from the top toolbar. Click on a pin to begin routing a connection between components.",
     },
     {
-      image: "/tutorial/step4-complete-wire.png",
+      image: "/tutorial/step4.png",
       title: "Connect component pins",
       description:
         "Click a second compatible pin to finish the wire. Press Esc to cancel",
     },
     {
-      image: "/tutorial/step5-edit-properties.png",
+      image: "/tutorial/step5.png",
       title: "Edit component properties",
       description:
         "Select a component and use the inspector panel to adjust labels, values, rotation, and pulse settings.",
     },
     {
-      image: "/tutorial/step6-run-simulation.png",
+      image: "/tutorial/step6.png",
       title: "Run a simulation",
       description:
         "Choose DC or transient mode, then click Run. FEMspice normalizes values and sends the schematic to the solver.",
     },
     {
-      image: "/tutorial/step7-view-results.png",
+      image: "/tutorial/step7.png",
       title: "Review voltage or current overlays",
       description:
         "After a run, toggle the Voltage/Current buttons to see measurement tags at a glance for each wire or device.",
     },
     {
-      image: "/tutorial/step8-save-circuit.png",
+      image: "/tutorial/step8.png",
       title: "Save or clear your workspace",
       description:
         "Open the Save dialog to store the circuit with a description, or clear the canvas to begin a new draft.",
