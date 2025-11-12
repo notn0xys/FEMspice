@@ -34,6 +34,10 @@ def convert_frontend_to_netlist(frontend_data):
     # Step 2: assign names to each net (N1, N2, ...)
     net_name_map = {}
     ground_nets = set()
+    for comp in components:
+        if comp["type"] == "ground":
+            for pin in comp["connections"].keys():
+                ground_nets.add((comp["id"], pin))
 
     for i, net in enumerate(nets, start=1):
         # Default name
@@ -74,14 +78,16 @@ def convert_frontend_to_netlist(frontend_data):
             "capacitor": "C",
             "inductor": "L",
             "voltageSource": "V",
-            "currentSource": "I"
+            "currentSource": "I",
+            "pulseVoltageSource": "PV",
         }
         comp_type = type_map.get(comp["type"])
         type_counters[comp_type] += 1
         comp_name = f"{comp_type}{type_counters[comp_type]}"
         comp_mapping[comp["id"]] = comp_name
 
-        parsed_components.append(SimComponent(
+
+        temp = SimComponent(
             type=comp_type,
             name=comp_name,
             node1=node1,
@@ -93,9 +99,16 @@ def convert_frontend_to_netlist(frontend_data):
                  "henry" if comp_type == "L" else
                  "ampere" if comp_type == "I" else "",
             prefix=""  # Default to no prefix; can be extended to parse from frontend
-         )
         )
+        if comp_type == "PV":
+            temp.initial_value = (comp.get("initialValue", 0), comp.get("initialPrefix", ""), "volt")
+            temp.pulse_value = comp.get("pulse_value")
+            temp.pulse_width = comp.get("pulse_width")
+            temp.period = comp.get("period")
+            temp.unit = "volt"
+        parsed_components.append(temp)
 
     json_safe_map = {f"{k[0]}:{k[1]}": v for k, v in net_name_map.items()}
+    print(parsed_components)
     return {"components": parsed_components, "mappings": json_safe_map, 'components_mapping': comp_mapping}
 

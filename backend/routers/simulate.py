@@ -17,16 +17,41 @@ router = APIRouter(
 
 @router.post("/DC", status_code=status.HTTP_200_OK)
 async def simulate_circuit(sim_request: SimulationRequest):
-    try:
-        if sim_request.mode.lower() == "dc":
-            result = sim.build_and_simulate_DC(sim_request.components)
+    if sim_request.mode.lower() == "dc":
+        try:
+            translation_res = translate.convert_frontend_to_netlist(sim_request)
+            result = sim.build_and_simulate_DC(translation_res["components"])
+            return {"result": result, 
+                "mappings": translation_res['mappings'], 
+                'components_mapping': translation_res['components_mapping']}
+        except ValueError as ve:
+            raise HTTPException(status_code=400, detail=str(ve))
+    elif sim_request.mode.lower() == "transient":
+        try:
+            translation_res = translate.convert_frontend_to_netlist(sim_request)
+            result = sim.build_and_simulate_transient(
+                translation_res["components"],
+                sim_request.step_time,
+                sim_request.end_time
+            )
             return {"result": result}
-        else:
-            raise HTTPException(status_code=400, detail="Unsupported simulation mode")
+        except ValueError as ve:
+            raise HTTPException(status_code=400, detail=str(ve))
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported simulation mode")
 
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
+@router.post("/transcient", status_code=status.HTTP_200_OK)
+async def transient(frontend_data: dict):
+    try:
+        translation_res = translate.convert_frontend_to_netlist(frontend_data)
+        result = sim.build_and_simulate_transient(
+            translation_res["components"],
+            frontend_data.get("step_time", 50e-6),
+            frontend_data.get("end_time", 30e-3)
+        )
+        return {"result": result}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
 
 @router.post("/test", status_code=status.HTTP_200_OK)
 async def test_endpoint(frontend_data: dict):
