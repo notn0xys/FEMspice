@@ -14,6 +14,7 @@ interface VoltageSourceNodeProps {
   wireMode?: boolean;
   activePin?: string | null;
   onContextMenu?: (e: Konva.KonvaEventObject<PointerEvent>) => void;
+  isDarkMode?: boolean;
 }
 
 export const VOLTAGE_SOURCE_RADIUS = 20;
@@ -35,6 +36,7 @@ export default function VoltageSourceNode({
   wireMode = false,
   activePin = null,
   onContextMenu,
+  isDarkMode = false,
 }: VoltageSourceNodeProps) {
   const voltageLabel = String(voltage);
 
@@ -44,6 +46,15 @@ export default function VoltageSourceNode({
     event.cancelBubble = true;
     onPinPointerDown?.(pinId, event);
   };
+
+  const selectionColor = "#3a3a36";
+  const strokeColor = isSelected ? selectionColor : isDarkMode ? "#f8fafc" : "black";
+  const leadColor = isDarkMode ? "#f8fafc" : "black";
+  const labelColor = isDarkMode ? "#f8fafc" : "black";
+  const bodyFill = isDarkMode ? "#3a3a36" : "white";
+  const symbolColor = isDarkMode ? "#f8fafc" : "black";
+  const inactivePinFill = isDarkMode ? "#3a3a36" : "#ffffff";
+  const pinStroke = isDarkMode ? "#f8fafc" : "#1f2937";
 
   return (
     <Group
@@ -62,12 +73,12 @@ export default function VoltageSourceNode({
       {/* Wires / terminals */}
       <Line
         points={[VOLTAGE_SOURCE_PIN_OFFSETS.top.x, VOLTAGE_SOURCE_PIN_OFFSETS.top.y, 0, -VOLTAGE_SOURCE_RADIUS]}
-        stroke="black"
+        stroke={leadColor}
         strokeWidth={2}
       />
       <Line
         points={[VOLTAGE_SOURCE_PIN_OFFSETS.bottom.x, VOLTAGE_SOURCE_PIN_OFFSETS.bottom.y, 0, VOLTAGE_SOURCE_RADIUS]}
-        stroke="black"
+        stroke={leadColor}
         strokeWidth={2}
       />
 
@@ -76,8 +87,8 @@ export default function VoltageSourceNode({
         x={VOLTAGE_SOURCE_PIN_OFFSETS.top.x}
         y={VOLTAGE_SOURCE_PIN_OFFSETS.top.y}
         radius={wireMode ? 7 : 5}
-        fill={wireMode ? (activePin === 'top' ? '#1d4ed8' : '#ffffff') : 'rgba(0,0,0,0)'}
-        stroke={wireMode ? '#1f2937' : 'rgba(0,0,0,0)'}
+  fill={wireMode ? (activePin === 'top' ? '#1d4ed8' : inactivePinFill) : 'rgba(0,0,0,0)'}
+  stroke={wireMode ? pinStroke : 'rgba(0,0,0,0)'}
         strokeWidth={wireMode ? 1.5 : 0}
         opacity={wireMode ? 1 : 0}
         hitStrokeWidth={18}
@@ -88,8 +99,8 @@ export default function VoltageSourceNode({
         x={VOLTAGE_SOURCE_PIN_OFFSETS.bottom.x}
         y={VOLTAGE_SOURCE_PIN_OFFSETS.bottom.y}
         radius={wireMode ? 7 : 5}
-        fill={wireMode ? (activePin === 'bottom' ? '#1d4ed8' : '#ffffff') : 'rgba(0,0,0,0)'}
-        stroke={wireMode ? '#1f2937' : 'rgba(0,0,0,0)'}
+  fill={wireMode ? (activePin === 'bottom' ? '#1d4ed8' : inactivePinFill) : 'rgba(0,0,0,0)'}
+  stroke={wireMode ? pinStroke : 'rgba(0,0,0,0)'}
         strokeWidth={wireMode ? 1.5 : 0}
         opacity={wireMode ? 1 : 0}
         hitStrokeWidth={18}
@@ -100,12 +111,12 @@ export default function VoltageSourceNode({
       {/* Voltage source circle */}
       <Circle
         radius={VOLTAGE_SOURCE_RADIUS}
-        stroke={isSelected ? "#2563eb" : "black"}
+        stroke={strokeColor}
         strokeWidth={isSelected ? 3 : 2}
-        fill="white"
+        fill={bodyFill}
         shadowEnabled={isSelected}
         shadowBlur={12}
-        shadowColor="#2563eb"
+  shadowColor={selectionColor}
       />
 
       {/* + and - symbols */}
@@ -115,7 +126,7 @@ export default function VoltageSourceNode({
         y={-VOLTAGE_SOURCE_RADIUS + 5}
         fontSize={14}
         fontStyle="bold"
-        fill="black"
+        fill={symbolColor}
       />
       <Text
         text="-"
@@ -123,7 +134,7 @@ export default function VoltageSourceNode({
         y={VOLTAGE_SOURCE_RADIUS - 15}
         fontSize={14}
         fontStyle="bold"
-        fill="black"
+        fill={symbolColor}
       />
 
       {/* Label for voltage */}
@@ -132,7 +143,7 @@ export default function VoltageSourceNode({
         x={-VOLTAGE_SOURCE_RADIUS - 10}
         y={VOLTAGE_SOURCE_RADIUS + 10}
         fontSize={12}
-        fill="black"
+        fill={labelColor}
       />
     </Group>
   );

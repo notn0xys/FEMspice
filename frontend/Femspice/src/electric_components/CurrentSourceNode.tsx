@@ -17,6 +17,7 @@ interface CurrentSourceNodeProps {
   wireMode?: boolean;
   activePin?: string | null;
   onContextMenu?: (event: Konva.KonvaEventObject<PointerEvent>) => void;
+  isDarkMode?: boolean;
 }
 
 export const CURRENT_SOURCE_RADIUS = 20;
@@ -38,6 +39,7 @@ export default function CurrentSourceNode({
   wireMode = false,
   activePin = null,
   onContextMenu,
+  isDarkMode = false,
 }: CurrentSourceNodeProps) {
   const currentLabel = String(current);
 
@@ -47,6 +49,15 @@ export default function CurrentSourceNode({
     event.cancelBubble = true;
     onPinPointerDown?.(pinId, event);
   };
+
+  const selectionColor = "#3a3a36";
+  const strokeColor = isSelected ? selectionColor : isDarkMode ? "#f8fafc" : "black";
+  const leadColor = isDarkMode ? "#f8fafc" : "black";
+  const labelColor = isDarkMode ? "#f8fafc" : "black";
+  const bodyFill = isDarkMode ? "#3a3a36" : "white";
+  const symbolColor = isDarkMode ? "#f8fafc" : "#000000ff";
+  const inactivePinFill = isDarkMode ? "#3a3a36" : "#ffffff";
+  const pinStroke = isDarkMode ? "#f8fafc" : "#1f2937";
 
   return (
     <Group
@@ -67,7 +78,7 @@ export default function CurrentSourceNode({
           0,
           -CURRENT_SOURCE_RADIUS,
         ]}
-        stroke="black"
+        stroke={leadColor}
         strokeWidth={2}
       />
       <Line
@@ -77,7 +88,7 @@ export default function CurrentSourceNode({
           0,
           CURRENT_SOURCE_RADIUS,
         ]}
-        stroke="black"
+        stroke={leadColor}
         strokeWidth={2}
       />
 
@@ -85,8 +96,8 @@ export default function CurrentSourceNode({
         x={CURRENT_SOURCE_PIN_OFFSETS.top.x}
         y={CURRENT_SOURCE_PIN_OFFSETS.top.y}
         radius={wireMode ? 7 : 5}
-        fill={wireMode ? (activePin === "top" ? "#1d4ed8" : "#ffffff") : "rgba(0,0,0,0)"}
-        stroke={wireMode ? "#1f2937" : "rgba(0,0,0,0)"}
+        fill={wireMode ? (activePin === "top" ? "#1d4ed8" : inactivePinFill) : "rgba(0,0,0,0)"}
+        stroke={wireMode ? pinStroke : "rgba(0,0,0,0)"}
         strokeWidth={wireMode ? 1.5 : 0}
         opacity={wireMode ? 1 : 0}
         hitStrokeWidth={18}
@@ -97,8 +108,8 @@ export default function CurrentSourceNode({
         x={CURRENT_SOURCE_PIN_OFFSETS.bottom.x}
         y={CURRENT_SOURCE_PIN_OFFSETS.bottom.y}
         radius={wireMode ? 7 : 5}
-        fill={wireMode ? (activePin === "bottom" ? "#1d4ed8" : "#ffffff") : "rgba(0,0,0,0)"}
-        stroke={wireMode ? "#1f2937" : "rgba(0,0,0,0)"}
+        fill={wireMode ? (activePin === "bottom" ? "#1d4ed8" : inactivePinFill) : "rgba(0,0,0,0)"}
+        stroke={wireMode ? pinStroke : "rgba(0,0,0,0)"}
         strokeWidth={wireMode ? 1.5 : 0}
         opacity={wireMode ? 1 : 0}
         hitStrokeWidth={18}
@@ -108,29 +119,29 @@ export default function CurrentSourceNode({
 
       <Circle
         radius={CURRENT_SOURCE_RADIUS}
-        stroke={isSelected ? "#2563eb" : "black"}
+        stroke={strokeColor}
         strokeWidth={isSelected ? 3 : 2}
-        fill="white"
+        fill={bodyFill}
         shadowEnabled={isSelected}
         shadowBlur={12}
-        shadowColor="#2563eb"
+  shadowColor={selectionColor}
       />
 
       <Line
         points={[0, -8, 0, 8]}
-        stroke="#000000ff"
+        stroke={symbolColor}
         strokeWidth={2}
         lineCap="round"
       />
       <Line
         points={[0, -8, -4, -2]}
-        stroke="#000000ff"
+        stroke={symbolColor}
         strokeWidth={2}
         lineCap="round"
       />
       <Line
         points={[0, -8, 4, -2]}
-        stroke="#000000ff"
+        stroke={symbolColor}
         strokeWidth={2}
         lineCap="round"
       />
@@ -140,7 +151,7 @@ export default function CurrentSourceNode({
         x={-CURRENT_SOURCE_RADIUS - 10}
         y={CURRENT_SOURCE_RADIUS + 10}
         fontSize={12}
-        fill="black"
+        fill={labelColor}
       />
     </Group>
   );
