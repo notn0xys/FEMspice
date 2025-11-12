@@ -143,7 +143,7 @@ export default function Login() {
                   />
                 </div>
               </div>
-              <div className="grid gap-2">
+              {/* <div className="grid gap-2">
                 <div className="flex items-center">
                 <p className="text-xs text-gray-400">Remember me?</p>
                 <a
@@ -154,7 +154,7 @@ export default function Login() {
                   </a>
                 </div>
                 
-              </div>
+              </div> */}
               </form>
           </CardContent>
           <CardFooter>
