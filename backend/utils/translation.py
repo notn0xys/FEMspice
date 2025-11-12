@@ -2,6 +2,9 @@ from model.circuit import SimComponent
 from collections import defaultdict
 
 def convert_frontend_to_netlist(frontend_data):
+    # print("DATA")
+    # print(frontend_data)
+    # print("------------------------------------")
     components = frontend_data["components"]
     wires = frontend_data["wires"]
 
@@ -29,7 +32,7 @@ def convert_frontend_to_netlist(frontend_data):
         if net_a != net_b:
             net_a |= net_b
             nets.remove(net_b)
-    #print(nets)
+
 
     # Step 2: assign names to each net (N1, N2, ...)
     net_name_map = {}
@@ -50,11 +53,13 @@ def convert_frontend_to_netlist(frontend_data):
         for pin in net:
             net_name_map[pin] = name
     
-    #print(net_name_map)
+
     if not ground_nets:
         print("NO GROUND FOUND")
         raise ValueError("No ground found in circuit — please add one before simulation.")
 
+    print(net_name_map)
+    
     # Step 3: build simplified component list
     parsed_components = []
     type_counters = defaultdict(int)  # counts per type
@@ -67,8 +72,20 @@ def convert_frontend_to_netlist(frontend_data):
         if len(pins) < 2:
             continue
 
-        node1 = net_name_map.get((comp["id"], pins[0]))
-        node2 = net_name_map.get((comp["id"], pins[1]))
+        if comp["type"] in ("voltageSource", "currentSource"):
+
+            # Force node1 = bottom/right (arrow tail)
+            bottom_pin = "bottom"
+            top_pin = "top"
+            node1 = net_name_map.get((comp["id"], top_pin))
+            node2 = net_name_map.get((comp["id"], bottom_pin))
+
+
+        else:
+            node1 = net_name_map.get((comp["id"], pins[0]))
+            node2 = net_name_map.get((comp["id"], pins[1]))
+
+     
 
         # translate frontend types → PySpice types
 
@@ -86,6 +103,15 @@ def convert_frontend_to_netlist(frontend_data):
         comp_name = f"{comp_type}{type_counters[comp_type]}"
         comp_mapping[comp["id"]] = comp_name
 
+        if comp_type == "I":
+
+            print("CURRENT SOURCE")
+            print(node1)
+            print((comp["id"], pins[0]))
+            print(node2)
+            print((comp["id"], pins[1]))
+            print()
+
 
         temp = SimComponent(
             type=comp_type,
@@ -100,6 +126,8 @@ def convert_frontend_to_netlist(frontend_data):
                  "ampere" if comp_type == "I" else "",
             prefix=""  # Default to no prefix; can be extended to parse from frontend
         )
+        # if comp_type == "I":
+        #   print(temp)
         if comp_type == "PV":
             temp.initial_value = (comp.get("initialValue", 0), comp.get("initialPrefix", ""), "volt")
             temp.pulse_value = comp.get("pulse_value")
@@ -109,6 +137,6 @@ def convert_frontend_to_netlist(frontend_data):
         parsed_components.append(temp)
 
     json_safe_map = {f"{k[0]}:{k[1]}": v for k, v in net_name_map.items()}
-    print(parsed_components)
+    # print(parsed_components)
     return {"components": parsed_components, "mappings": json_safe_map, 'components_mapping': comp_mapping}
 
