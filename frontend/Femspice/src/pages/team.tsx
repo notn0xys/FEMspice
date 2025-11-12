@@ -1,3 +1,5 @@
+import PageNav from "@/components/page-nav";
+
 type TeamMember = {
   name: string;
   image: string;
@@ -24,25 +26,28 @@ export default function MeetOurTeam() {
   ];
 
   return (
-    <div className="w-full min-h-screen flex flex-col items-center justify-center p-8">
-      <h1 className="text-3xl font-bold mb-8">Meet Our Team</h1>
+    <div className="min-h-screen bg-background">
+      <PageNav />
+      <main className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 py-12">
+        <h1 className="text-3xl font-bold mb-8">Meet Our Team</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 w-full max-w-6xl">
-        {team.map((member) => (
-          <div
-            key={member.name}
-            className="flex flex-col items-center text-center rounded-lg shadow-md p-4"
-          >
-            <img
-              src={member.image}
-              alt={member.name}
-              className="w-40 h-40 rounded-full object-cover mb-4 shadow"
-            />
-            <h2 className="text-xl font-semibold mb-2">{member.name}</h2>
-            <p className="text-sm">{member.description}</p>
-          </div>
-        ))}
-      </div>
+        <div className="grid w-full max-w-5xl grid-cols-1 gap-8 sm:grid-cols-3">
+          {team.map((member) => (
+            <div
+              key={member.name}
+              className="flex flex-col items-center rounded-lg border bg-card p-6 text-center shadow-sm"
+            >
+              <img
+                src={member.image}
+                alt={member.name}
+                className="mb-4 h-40 w-40 rounded-full object-cover shadow"
+              />
+              <h2 className="text-xl font-semibold mb-2">{member.name}</h2>
+              <p className="text-sm text-muted-foreground">{member.description}</p>
+            </div>
+          ))}
+        </div>
+      </main>
     </div>
   );
 }

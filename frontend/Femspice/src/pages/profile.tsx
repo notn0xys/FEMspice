@@ -114,7 +114,7 @@ export default function Profile() {
       <div className="w-7/10 min-w-5xl h-[500px] flex overflow-hidden rounded-xl shadow-lg dark:bg-[#3a3a37] ">
         {/* Sidebar */}
         <div className="w-64 shadow-md p-4 flex flex-col">
-          <h2 className="text-2xl font-bold text-orange-500 dark:text-orange-400 mb-6 text-center">
+          <h2 className="text-2xl font-bold text-[#d97757] dark:text-orange-400 mb-6 text-center">
             My Profile
           </h2>
 
@@ -123,7 +123,7 @@ export default function Profile() {
               onClick={() => setActiveTab("account")}
               className={`text-left px-4 py-2 rounded-md font-medium transition ${
                 activeTab === "account"
-                  ? "bg-orange-500 text-white"
+                  ? " bg-[#d97757] text-white"
                   : "text-gray-800 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-gray-700"
               }`}
             >
@@ -134,7 +134,7 @@ export default function Profile() {
               onClick={() => setActiveTab("creations")}
               className={`text-left px-4 py-2 rounded-md font-medium transition ${
                 activeTab === "creations"
-                  ? "bg-orange-500 text-white"
+                  ? "bg-[#d97757] text-white"
                   : "text-gray-800 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-gray-700"
               }`}
             >
@@ -145,7 +145,7 @@ export default function Profile() {
               onClick={() => setActiveTab("settings")}
               className={`text-left px-4 py-2 rounded-md font-medium transition ${
                 activeTab === "settings"
-                  ? "bg-orange-500 text-white"
+                  ? "bg-[#d97757] text-white"
                   : "text-gray-800 dark:text-gray-300 hover:bg-orange-100 dark:hover:bg-gray-700"
               }`}
             >
@@ -228,7 +228,7 @@ function CreationsTab({
               onClick={() => navigate(`/home?id=${circuit.id}`)}
               className="p-4 border border-gray-200 dark:border-gray-600 rounded-md cursor-pointer hover:bg-orange-50 dark:hover:bg-gray-500 transition"
             >
-              <h3 className="text-lg font-semibold text-orange-500 dark:text-orange-400">
+              <h3 className="text-lg font-semibold text-[#d97757] dark:text-orange-400">
                 {circuit.name}
               </h3>
               <p className="text-sm text-gray-700 dark:text-gray-300">

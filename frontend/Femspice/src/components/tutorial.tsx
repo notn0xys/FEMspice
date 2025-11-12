@@ -38,8 +38,12 @@ export default function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="relative bg-[#f5f5f5] dark:bg-[#3a3a37] rounded-lg shadow-lg p-6 max-w-5xl w-full flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative z-10 flex w-full max-w-5xl flex-col rounded-lg bg-[#f5f5f5] p-6 shadow-lg dark:bg-[#3a3a37]">
         <button
           onClick={onClose}
           className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white"
