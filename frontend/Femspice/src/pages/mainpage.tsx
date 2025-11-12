@@ -1264,6 +1264,15 @@ export default function MainPage() {
     if (!selectedId) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      const activeElement = typeof document !== "undefined" ? document.activeElement : null;
+      if (
+        isEditableElement(activeElement) ||
+        isSaveDialogOpen ||
+        Boolean(inspectorId)
+      ) {
+        return;
+      }
+
       if (
         event.key.toLowerCase() === "r" &&
         !event.altKey &&
@@ -1277,7 +1286,7 @@ export default function MainPage() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedId, rotateSelected]);
+  }, [selectedId, rotateSelected, isSaveDialogOpen, inspectorId]);
 
   useEffect(() => {
     if (!selectedId) {
@@ -1578,7 +1587,7 @@ export default function MainPage() {
       }
 
       const data = await response.json();
-      console.log("Save successful:", data);
+      toast.success("Circuit saved successfully!");
 
       setIsSaveDialogOpen(false);
       setSaveDescription("");
