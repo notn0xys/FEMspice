@@ -14,10 +14,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { useWireMode } from "@/context/wire-mode-context"
 import capacitorIcon from "@/assets/componentsIcons/capacitor.png"
+import capacitorIconWhite from "@/assets/componentsIcons/capcitor_white.png"
 import inductorIcon from "@/assets/componentsIcons/inductor.png"
+import inductorIconWhite from "@/assets/componentsIcons/inductor_white.png"
 import resistorIcon from "@/assets/componentsIcons/Resistor.png"
+import resistorIconWhite from "@/assets/componentsIcons/Resistor_white.png"
 import{ Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
 import { Link, useNavigate } from "react-router-dom"
 type AppSidebarProps = {
   onRunCircuit?: () => void
@@ -34,6 +37,7 @@ type ComponentPaletteItem = {
   value?: number
   icon?: ComponentType<{ className?: string }>
   imageSrc?: string
+  imageSrcDark?: string
 }
 
 
@@ -51,18 +55,21 @@ const componentPalette: ComponentPaletteItem[] = [
     type: "resistor",
     value: 1000,
     imageSrc: resistorIcon,
+    imageSrcDark: resistorIconWhite,
   },
   {
     title: "Capacitor",
     type: "capacitor",
     value: 1e-6,
     imageSrc: capacitorIcon,
+    imageSrcDark: capacitorIconWhite,
   },
   {
     title: "Inductor",
     type: "inductor",
     value: 0.01,
     imageSrc: inductorIcon,
+    imageSrcDark: inductorIconWhite,
   },
   {
     title: "Current Source",
@@ -80,11 +87,36 @@ const componentPalette: ComponentPaletteItem[] = [
 export function AppSidebar({ id , onSaveCircuit, onClearCircuit, onRunCircuit, mode = "dc", onModeChange }: AppSidebarProps) {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("User");
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof document === "undefined") {
+      return false;
+    }
+    return document.documentElement.classList.contains("dark");
+  });
   useEffect(() => {
     const storedName = localStorage.getItem("sub");
     if (storedName) {
       setDisplayName(storedName);
     }
+  }, []);
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    const updateMode = () => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    };
+
+    updateMode();
+
+    const observer = new MutationObserver(updateMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
   }, []);
   const { wireMode, toggleWireMode } = useWireMode();
   useEffect(() => {
@@ -92,6 +124,16 @@ export function AppSidebar({ id , onSaveCircuit, onClearCircuit, onRunCircuit, m
       navigate("/login", { replace: true });
     }
   }, [navigate]);
+  const themedPalette = useMemo(
+    () =>
+      componentPalette.map((component) => ({
+        ...component,
+        imageSrc: isDarkMode
+          ? component.imageSrcDark ?? component.imageSrc
+          : component.imageSrc,
+      })),
+    [isDarkMode],
+  );
   const handleDragStart = (
     event: DragEvent<HTMLButtonElement>,
     component: ComponentPaletteItem
@@ -135,14 +177,14 @@ export function AppSidebar({ id , onSaveCircuit, onClearCircuit, onRunCircuit, m
                 </Button>
               </div>
               <SidebarMenu>
-                {componentPalette.map((component) => (
+                {themedPalette.map((component) => (
                   <SidebarMenuItem key={component.type}>
                     <SidebarMenuButton
                       draggable
                       onDragStart={(event) => handleDragStart(event, component)}
                     >
                       {component.icon ? (
-                        <component.icon className="h-4 w-4 shrink-0" />
+                        <component.icon className={`h-4 w-4 shrink-0 ${isDarkMode ? "text-white" : ""}`} />
                       ) : component.imageSrc ? (
                         <img
                           src={component.imageSrc}

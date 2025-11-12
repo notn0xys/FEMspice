@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Group, Line, Rect, Text, Circle, Image as KonvaImage } from 'react-konva';
-import type Konva from 'konva';
-import resistorIcon from '@/assets/componentsIcons/Resistor.png';
+import { useEffect, useMemo, useState } from "react";
+import { Group, Line, Rect, Text, Circle, Image as KonvaImage } from "react-konva";
+import type Konva from "konva";
+import resistorIcon from "@/assets/componentsIcons/Resistor.png";
+import resistorIconWhite from "@/assets/componentsIcons/Resistor_white.png";
 
 interface ResistorNodeProps {
   x?: number;
@@ -16,6 +17,7 @@ interface ResistorNodeProps {
   wireMode?: boolean;
   activePin?: string | null;
   onContextMenu?: (e: Konva.KonvaEventObject<PointerEvent>) => void;
+  isDarkMode?: boolean;
 }
 
 const RESISTOR_WIDTH = 80;
@@ -41,18 +43,21 @@ export default function ResistorNode({
   wireMode = false,
   activePin = null,
   onContextMenu,
+  isDarkMode = false,
 }: ResistorNodeProps) {
   const label = typeof resistance === 'number' ? `${resistance}Ω` : resistance;
   const [iconImage, setIconImage] = useState<HTMLImageElement | null>(null);
 
+  const iconSource = useMemo(() => (isDarkMode ? resistorIconWhite : resistorIcon), [isDarkMode]);
+
   useEffect(() => {
     const img = new window.Image();
-    img.src = resistorIcon;
+    img.src = iconSource;
     img.onload = () => setIconImage(img);
     return () => {
       img.onload = null;
     };
-  }, []);
+  }, [iconSource]);
 
   const handlePinEvent = (pinId: string) => (
     event: Konva.KonvaEventObject<MouseEvent | TouchEvent>
@@ -60,6 +65,15 @@ export default function ResistorNode({
     event.cancelBubble = true;
     onPinPointerDown?.(pinId, event);
   };
+
+  const selectionColor = "#3a3a36";
+  const baseStroke = isDarkMode ? "#f8fafc" : "#1f2937";
+  const strokeColor = isSelected ? selectionColor : baseStroke;
+  const leadColor = isDarkMode ? "#f8fafc" : "#1f2937";
+  const labelColor = isDarkMode ? "#f8fafc" : "black";
+  const bodyFill = isDarkMode ? "#3a3a36" : "#ffffff";
+  const inactivePinFill = isDarkMode ? "#3a3a36" : "#ffffff";
+  const pinStroke = isDarkMode ? "#f8fafc" : "#1f2937";
 
   return (
     <Group
@@ -76,12 +90,12 @@ export default function ResistorNode({
       {/* Leads */}
       <Line
         points={[RESISTOR_PIN_OFFSETS.left.x, 0, -RESISTOR_WIDTH / 2, 0]}
-        stroke="black"
+        stroke={leadColor}
         strokeWidth={2}
       />
       <Line
         points={[RESISTOR_WIDTH / 2, 0, RESISTOR_PIN_OFFSETS.right.x, 0]}
-        stroke="black"
+        stroke={leadColor}
         strokeWidth={2}
       />
 
@@ -90,8 +104,8 @@ export default function ResistorNode({
         x={RESISTOR_PIN_OFFSETS.left.x}
         y={RESISTOR_PIN_OFFSETS.left.y}
         radius={wireMode ? 8 : 6}
-        fill={wireMode ? (activePin === 'left' ? '#1d4ed8' : '#ffffff') : 'rgba(0,0,0,0)'}
-        stroke={wireMode ? '#1f2937' : 'rgba(0,0,0,0)'}
+        fill={wireMode ? (activePin === 'left' ? '#1d4ed8' : inactivePinFill) : 'rgba(0,0,0,0)'}
+        stroke={wireMode ? pinStroke : 'rgba(0,0,0,0)'}
         strokeWidth={wireMode ? 1.5 : 0}
         opacity={wireMode ? 1 : 0}
         hitStrokeWidth={20}
@@ -102,8 +116,8 @@ export default function ResistorNode({
         x={RESISTOR_PIN_OFFSETS.right.x}
         y={RESISTOR_PIN_OFFSETS.right.y}
         radius={wireMode ? 8 : 6}
-        fill={wireMode ? (activePin === 'right' ? '#1d4ed8' : '#ffffff') : 'rgba(0,0,0,0)'}
-        stroke={wireMode ? '#1f2937' : 'rgba(0,0,0,0)'}
+        fill={wireMode ? (activePin === 'right' ? '#1d4ed8' : inactivePinFill) : 'rgba(0,0,0,0)'}
+        stroke={wireMode ? pinStroke : 'rgba(0,0,0,0)'}
         strokeWidth={wireMode ? 1.5 : 0}
         opacity={wireMode ? 1 : 0}
         hitStrokeWidth={20}
@@ -117,13 +131,13 @@ export default function ResistorNode({
         y={-RESISTOR_HEIGHT / 2}
         width={RESISTOR_WIDTH}
         height={RESISTOR_HEIGHT}
-        fill="#ffffff"
-        stroke={isSelected ? "#2563eb" : "black"}
+        fill={bodyFill}
+        stroke={strokeColor}
         strokeWidth={isSelected ? 3 : 2}
         cornerRadius={6}
         shadowEnabled={isSelected}
         shadowBlur={10}
-        shadowColor="#2563eb"
+  shadowColor={selectionColor}
       />
 
       {/* Icon inside resistor */}
@@ -158,7 +172,7 @@ export default function ResistorNode({
             RESISTOR_WIDTH / 2 - RESISTOR_ICON_MARGIN,
             0,
           ]}
-          stroke="#1f2937"
+          stroke={leadColor}
           strokeWidth={2}
           lineJoin="round"
           lineCap="round"
@@ -173,7 +187,7 @@ export default function ResistorNode({
         width={RESISTOR_WIDTH}
         align="center"
         fontSize={12}
-        fill="black"
+        fill={labelColor}
       />
     </Group>
   );

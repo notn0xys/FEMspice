@@ -17,6 +17,7 @@ interface GroundNodeProps {
   wireMode?: boolean;
   activePin?: string | null;
   onContextMenu?: (event: Konva.KonvaEventObject<PointerEvent>) => void;
+  isDarkMode?: boolean;
 }
 
 const GROUND_PIN_LENGTH = 26;
@@ -40,6 +41,7 @@ export default function GroundNode({
   wireMode = false,
   activePin = null,
   onContextMenu,
+  isDarkMode = false,
 }: GroundNodeProps) {
   const handlePinEvent = (pinId: string) => (
     event: Konva.KonvaEventObject<MouseEvent | TouchEvent>
@@ -48,7 +50,12 @@ export default function GroundNode({
     onPinPointerDown?.(pinId, event);
   };
 
-  const strokeColor = isSelected ? "#2563eb" : "#1f2937";
+  const baseStroke = isDarkMode ? "#f8fafc" : "#1f2937";
+  const selectionColor = "#3a3a36";
+  const strokeColor = isSelected ? selectionColor : baseStroke;
+  const labelColor = isDarkMode ? "#f8fafc" : "#1f2937";
+  const pinStroke = isDarkMode ? "#f8fafc" : "#1f2937";
+  const inactivePinFill = isDarkMode ? "#3a3a36" : "#ffffff";
 
   return (
     <Group
@@ -74,14 +81,14 @@ export default function GroundNode({
         lineCap="round"
         shadowEnabled={isSelected}
         shadowBlur={10}
-        shadowColor="#2563eb"
+  shadowColor={selectionColor}
       />
       <Circle
         x={GROUND_PIN_OFFSETS.top.x}
         y={GROUND_PIN_OFFSETS.top.y}
         radius={wireMode ? 7 : 5}
-        fill={wireMode ? (activePin === "top" ? "#1d4ed8" : "#ffffff") : "rgba(0,0,0,0)"}
-        stroke={wireMode ? "#1f2937" : "rgba(0,0,0,0)"}
+        fill={wireMode ? (activePin === "top" ? "#1d4ed8" : inactivePinFill) : "rgba(0,0,0,0)"}
+        stroke={wireMode ? pinStroke : "rgba(0,0,0,0)"}
         strokeWidth={wireMode ? 1.5 : 0}
         opacity={wireMode ? 1 : 0}
         hitStrokeWidth={18}
@@ -104,7 +111,7 @@ export default function GroundNode({
         width={40}
         align="center"
         fontSize={12}
-        fill="#1f2937"
+        fill={labelColor}
       />
     </Group>
   );

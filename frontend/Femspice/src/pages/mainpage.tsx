@@ -171,6 +171,7 @@ export default function MainPage() {
   const measurementTagFill = isDarkMode ? "rgba(0,0,0,0.85)" : "rgba(15,23,42,0.85)";
   const measurementTagStroke = isDarkMode ? "rgba(148,163,184,0.4)" : "rgba(148,163,184,0.6)";
   const measurementTextColor = isDarkMode ? "#f8fafc" : "#0f172a";
+  const previousWireColorRef = useRef(wireColor);
   useEffect(() => {
     if (typeof document === "undefined") {
       return;
@@ -191,15 +192,36 @@ export default function MainPage() {
     return () => observer.disconnect();
   }, [theme]);
   useEffect(() => {
+    const previousWireColor = previousWireColorRef.current;
+    const knownDefaults = new Set([
+      previousWireColor,
+      "#1f2937",
+      "#000000ff",
+      "#ffffff",
+    ]);
+
     setWires((prevWires) =>
       prevWires.map((wire) => {
-        if (!wire.color || wire.color === "#1f2937" || wire.color === "#ffffff") {
+        if (!wire.color || knownDefaults.has(wire.color)) {
           return { ...wire, color: wireColor };
         }
         return wire;
       })
     );
-    setDraftWire((prevDraft) => (prevDraft ? { ...prevDraft, color: wireColor } : prevDraft));
+
+    setDraftWire((prevDraft) => {
+      if (!prevDraft) {
+        return prevDraft;
+      }
+
+      if (!prevDraft.color || knownDefaults.has(prevDraft.color)) {
+        return { ...prevDraft, color: wireColor };
+      }
+
+      return prevDraft;
+    });
+
+    previousWireColorRef.current = wireColor;
   }, [wireColor]);
   //Resize stage to fit container
   useEffect(() => {
@@ -948,12 +970,13 @@ export default function MainPage() {
 
   function renderComponent(component: CanvasComponent) {
     const isSelected = selectedId === component.id;
+    const themeKey = `${component.id}-${isDarkMode ? "dark" : "light"}`;
 
     switch (component.type) {
       case "resistor":
         return (
           <ResistorNode
-            key={component.id}
+            key={themeKey}
             x={component.x}
             y={component.y}
             rotation={component.rotation}
@@ -966,12 +989,13 @@ export default function MainPage() {
             onPinPointerDown={(pinId, event) =>
               handlePinPointerDown(component.id, pinId, event)
             }
+            isDarkMode={isDarkMode}
           />
         );
       case "capacitor":
         return (
           <CapacitorNode
-            key={component.id}
+            key={themeKey}
             x={component.x}
             y={component.y}
             rotation={component.rotation}
@@ -984,12 +1008,13 @@ export default function MainPage() {
             onPinPointerDown={(pinId, event) =>
               handlePinPointerDown(component.id, pinId, event)
             }
+            isDarkMode={isDarkMode}
           />
         );
       case "inductor":
         return (
           <InductorNode
-            key={component.id}
+            key={themeKey}
             x={component.x}
             y={component.y}
             rotation={component.rotation}
@@ -1002,12 +1027,13 @@ export default function MainPage() {
             onPinPointerDown={(pinId, event) =>
               handlePinPointerDown(component.id, pinId, event)
             }
+            isDarkMode={isDarkMode}
           />
         );
       case "voltageSource":
         return (
           <VoltageSourceNode
-            key={component.id}
+            key={themeKey}
             x={component.x}
             y={component.y}
             rotation={component.rotation}
@@ -1020,12 +1046,13 @@ export default function MainPage() {
             onPinPointerDown={(pinId, event) =>
               handlePinPointerDown(component.id, pinId, event)
             }
+            isDarkMode={isDarkMode}
           />
         );
       case "currentSource":
         return (
           <CurrentSourceNode
-            key={component.id}
+            key={themeKey}
             x={component.x}
             y={component.y}
             rotation={component.rotation}
@@ -1038,12 +1065,13 @@ export default function MainPage() {
             onPinPointerDown={(pinId, event) =>
               handlePinPointerDown(component.id, pinId, event)
             }
+            isDarkMode={isDarkMode}
           />
         );
       case "ground":
         return (
           <GroundNode
-            key={component.id}
+            key={themeKey}
             x={component.x}
             y={component.y}
             rotation={component.rotation}
@@ -1056,18 +1084,19 @@ export default function MainPage() {
             onPinPointerDown={(pinId, event) =>
               handlePinPointerDown(component.id, pinId, event)
             }
+            isDarkMode={isDarkMode}
           />
         );
       default:
         return (
           <Rect
-            key={component.id}
+            key={themeKey}
             x={component.x}
             y={component.y}
             width={50}
             height={50}
-            fill="gray"
-            stroke={isSelected ? "#2563eb" : "transparent"}
+            fill={isDarkMode ? "#0f172a" : "gray"}
+            stroke={isSelected ? "#2563eb" : isDarkMode ? "#f8fafc" : "transparent"}
             strokeWidth={isSelected ? 3 : 0}
             shadowEnabled={isSelected}
             shadowBlur={8}
