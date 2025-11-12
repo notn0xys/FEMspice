@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Circle, Group, Line, Text } from "react-konva";
+import { Circle, Group, Line } from "react-konva";
 import type Konva from "konva";
 
 export interface PulseSettings {
@@ -38,7 +38,6 @@ export default function PulseVoltageSourceNode({
   x = 0,
   y = 0,
   rotation = 0,
-  pulseSettings,
   onDragMove,
   onDragEnd,
   onSelect,
@@ -84,9 +83,6 @@ export default function PulseVoltageSourceNode({
       8,
     ];
   }, []);
-
-  const formatValue = (value?: number | null) =>
-    value === null || value === undefined ? "—" : value.toFixed(2);
 
   return (
     <Group
