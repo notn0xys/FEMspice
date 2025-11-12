@@ -5,6 +5,7 @@ import About from './pages/about'
 import MainPage from './pages/mainpage'
 import Signup from './pages/signup'
 import Profile from './pages/profile'
+import TutorialTest from './pages/tutorialtest'
 import { useEffect } from 'react';
 import PublicRoute from './routes/PublicRoute';
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <Route path='/home' element = {<PublicRoute><MainPage/></PublicRoute>}/>
         <Route path='/signup' element = {<PublicRoute><Signup/></PublicRoute>}/>
         <Route path='/profile' element = {<PublicRoute><Profile/></PublicRoute>}/>
+        <Route path="/tutorial-test" element={<PublicRoute><TutorialTest /></PublicRoute>} />
       </Routes>
     </div>
   )
