@@ -167,7 +167,7 @@ export default function Profile() {
           {activeTab === "creations" && (
             <CreationsTab circuitList={circuitList} navigate={navigate} />
           )}
-          {activeTab === "settings" && <SettingsTab />}
+          {/* {activeTab === "settings" && <SettingsTab />} */}
         </div>
       </div>
 
@@ -190,13 +190,13 @@ function AccountTab({ user }: { user: User }) {
         className="w-24 h-24 rounded-full shadow-md mb-3"
       />
       <p className="text-gray-700 dark:text-gray-300 mb-2">
-        <strong>Name:</strong> {user.full_name || user.username}
+        <strong>Name:</strong> {user.username}
+      </p>
+      <p className="text-gray-700 dark:text-gray-300 mb-2">
+        <strong>Name:</strong> {user.full_name}
       </p>
       <p className="text-gray-700 dark:text-gray-300 mb-2">
         <strong>Email:</strong> {user.email}
-      </p>
-      <p className="text-gray-700 dark:text-gray-300">
-        <strong>Bio:</strong> Game Designer, Circuit Enthusiast
       </p>
     </div>
   );
@@ -241,22 +241,22 @@ function CreationsTab({
   );
 }
 
-function SettingsTab() {
-  return (
-    <div className="bg-white dark:bg-[#4a4a47] rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-        Settings
-      </h2>
-      <div className="space-y-3 text-gray-700 dark:text-gray-300">
-        <label className="flex items-center">
-          <input type="checkbox" className="mr-2 accent-orange-500" />
-          Enable Dark Mode
-        </label>
-        <label className="flex items-center">
-          <input type="checkbox" className="mr-2 accent-orange-500" />
-          Email Notifications
-        </label>
-      </div>
-    </div>
-  );
-}
+// function SettingsTab() {
+//   return (
+//     <div className="bg-white dark:bg-[#4a4a47] rounded-lg shadow p-6">
+//       <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+//         Settings
+//       </h2>
+//       <div className="space-y-3 text-gray-700 dark:text-gray-300">
+//         <label className="flex items-center">
+//           <input type="checkbox" className="mr-2 accent-orange-500" />
+//           Enable Dark Mode
+//         </label>
+//         <label className="flex items-center">
+//           <input type="checkbox" className="mr-2 accent-orange-500" />
+//           Email Notifications
+//         </label>
+//       </div>
+//     </div>
+//   );
+// }
