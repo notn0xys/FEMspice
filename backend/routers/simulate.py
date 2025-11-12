@@ -114,3 +114,31 @@ async def load_circuit(circuit_id: str, current_user: Annotated[UserPublic, Depe
 
     return simulation_doc
     
+
+
+@router.delete("/delete/{circuit_id}", status_code=status.HTTP_200_OK)
+async def delete_circuit(
+    circuit_id: str,
+    current_user: Annotated[UserPublic, Depends(get_current_user)]
+):
+    try:
+        circuit_obj_id = ObjectId(circuit_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid circuit ID")
+
+    circuit = simulations_collection.find_one({
+        "_id": circuit_obj_id,
+        "user_id": ObjectId(current_user["id"])
+    })
+
+    if not circuit:
+        raise HTTPException(status_code=404, detail="Circuit not found or not owned by user")
+
+    simulations_collection.delete_one({"_id": circuit_obj_id})
+
+    users_collection.update_one(
+        {"_id": ObjectId(current_user["id"])},
+        {"$pull": {"circuits": {"_id": circuit_obj_id}}}
+    )
+
+    return {"message": "Circuit deleted successfully", "circuit_id": circuit_id}
