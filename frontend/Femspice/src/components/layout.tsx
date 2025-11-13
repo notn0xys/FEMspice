@@ -43,9 +43,7 @@ export default function Layout({ id, onSaveCircuit, onClearCircuit, children, on
     localStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
-  function handleReload() {
-    window.location.reload();
-  }
+
   return (
 
       <SidebarProvider 
