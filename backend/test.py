@@ -160,3 +160,4 @@ plt.show()
 # capacitor_value = convert_to_pyspice(10, "u", "farad")  # 10 μF
 
 # print(resistor_value, voltage_value, capacitor_value)
+## git gay
