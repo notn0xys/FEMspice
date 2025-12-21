@@ -54,7 +54,7 @@ export default function Profile() {
 
     const fetchProfile = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/auth/profile", {
+        const response = await fetch("https://femspice-api.noxunya.dev/auth/profile", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -77,7 +77,7 @@ export default function Profile() {
 
     const fetchCircuits = async () => {
       try {
-        const response2 = await fetch("http://127.0.0.1:8000/simulate/list", {
+        const response2 = await fetch("https://femspice-api.noxunya.dev/simulate/list", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -204,7 +204,7 @@ function CreationsTab({
         toast.error("You are not logged in");
         return;
       }
-      const res = await fetch(`http://127.0.0.1:8000/simulate/delete/${id}`, {
+      const res = await fetch(`https://femspice-api.noxunya.dev/simulate/delete/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

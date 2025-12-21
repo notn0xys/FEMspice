@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  backend:
+    image: femspice-backend
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run femspice
+    volumes:
+      - ~/.cloudflared:/etc/cloudflared
+    depends_on:
+      - backend
+    restart: unless-stopped

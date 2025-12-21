@@ -38,3 +38,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app.include_router(auth.router)
 app.include_router(simulate.router)
 
+@app.get("/health")
+def health():
+    return {"ok": True}

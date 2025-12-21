@@ -39,7 +39,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/login" , {
+      const response = await fetch("https://femspice-api.noxunya.dev/auth/login" , {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

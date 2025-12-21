@@ -363,7 +363,7 @@ export default function MainPage() {
     hasLoadedRef.current = true;
     const fetchCircuit = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/simulate/load/${circuitId}`, {
+        const response = await fetch(`https://femspice-api.noxunya.dev/simulate/load/${circuitId}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -943,7 +943,7 @@ export default function MainPage() {
     setSimulationResult(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/simulate/test", {
+      const response = await fetch("https://femspice-api.noxunya.dev/simulate/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -1029,7 +1029,7 @@ export default function MainPage() {
     setSimulationResult(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/simulate/transcient", {
+      const response = await fetch("https://femspice-api.noxunya.dev/simulate/transcient", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -1572,7 +1572,7 @@ export default function MainPage() {
     setIsSaving(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/simulate/save", {
+      const response = await fetch("https://femspice-api.noxunya.dev/simulate/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
