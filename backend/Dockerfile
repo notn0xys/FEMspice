@@ -5,6 +5,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     build-essential \
     ngspice \
+    libngspice0 \
+    libngspice0-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
