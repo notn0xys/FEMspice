@@ -9,6 +9,7 @@ from config.db import users_collection, simulations_collection, client
 from typing import Annotated
 from routers import auth, simulate
 import traceback
+import socket
 
 # Send a ping to confirm a successful connection
 try:
@@ -77,4 +78,6 @@ def health():
 @app.get("/meow")
 def meow():
     return {"meow": "meow!"}    
-
+@app.get("/whoami")
+def whoami():
+    return {"host": socket.gethostname()}
