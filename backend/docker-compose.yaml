@@ -6,6 +6,8 @@ services:
     image: femspice-backend
     expose:
       - "8000"
+    env_file:
+      - .env
     restart: unless-stopped
     deploy:
       replicas: 2
