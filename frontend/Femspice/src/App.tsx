@@ -7,6 +7,8 @@ import Signup from './pages/signup'
 import Profile from './pages/profile'
 import MeetOurTeam from './pages/team'
 import Landing from './pages/landing'
+import ForgotPassword from './pages/forgot-password'
+import ResetPassword from './pages/reset-password'
 import { useEffect } from 'react';
 import PublicRoute from './routes/PublicRoute';
 import UserRoute from './routes/UserRoute'
@@ -15,7 +17,7 @@ function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     const isDarkMode = savedTheme === 'dark';
-    
+
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -34,7 +36,8 @@ function App() {
         <Route path='/profile' element = {<UserRoute><Profile/></UserRoute>}/>
         <Route path="/team" element={<PublicRoute><MeetOurTeam /></PublicRoute>} />
         <Route path='/landing' element = {<PublicRoute><Landing/></PublicRoute>}/>
-
+        <Route path='/forgot-password' element = {<PublicRoute><ForgotPassword/></PublicRoute>}/>
+        <Route path='/reset-password' element = {<PublicRoute><ResetPassword/></PublicRoute>}/>
       </Routes>
       <Toaster position="top-right" richColors closeButton />
     </div>

@@ -9,116 +9,151 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
-import { Lock, User, Mail } from "lucide-react"
-import { Link, useNavigate } from 'react-router-dom'
+import { Lock, User, Mail, KeyRound } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { jwtDecode } from "jwt-decode";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { apiUrl } from "@/lib/api";
+
+type Step = "details" | "verify";
 
 export default function Signup() {
-  
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [email, setEmail] = useState("")
+  const [step, setStep] = useState<Step>("details");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token){
-      navigate("/home")
-    }
+    if (token) navigate("/home");
   }, [navigate]);
 
-  async function verify_login(){
+  function persistTokenAndGoHome(accessToken: string) {
+    const decoded: any = jwtDecode(accessToken);
+    localStorage.setItem("sub", decoded.sub);
+    localStorage.setItem("token", accessToken);
+    navigate("/home");
+  }
 
+  async function startRegister(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    if (!username || !password || !email) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const response = await fetch("https://femspice-api.noxunya.dev/auth/login" , {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          username: username,
-          password: password,
-        }),
+      const response = await fetch(apiUrl("/auth/register/start"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, email, full_name: "" }),
       });
 
-      if(!response.ok) {
-        throw new Error('HTTP error! status: ${response.status}');
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.detail || `Sign up failed (${response.status})`);
       }
 
-      const responseData = await response.json();
-      console.log('Success: ', responseData);
-
-      const decodedToken: any = jwtDecode(responseData.access_token);
-      console.log('Decoded Token: ', decodedToken);
-      localStorage.setItem("sub", decodedToken.sub);
-      localStorage.setItem("token", responseData.access_token);
-
-      navigate("/home")
-    } catch (error) {
-      console.error('Error: ', error)
-      toast.error("Invalid username or password");
-
+      toast.success("We sent a verification code to your email");
+      setStep("verify");
+    } catch (err: any) {
+      toast.error(err.message || "Could not start sign up");
     } finally {
       setIsLoading(false);
     }
   }
 
-  async function register_account(e: React.MouseEvent<HTMLButtonElement>){
-    e.preventDefault()
-    if (!username || !password || !email) {
+  async function verifyCode(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    if (!code || code.length < 4) {
+      toast.error("Enter the code from your email");
       return;
     }
-
     setIsLoading(true);
-
     try {
-      const response = await fetch("https://femspice-api.noxunya.dev/auth/register" , {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-          email: email,
-          fullname: "",
-        })
+      const response = await fetch(apiUrl("/auth/register/verify"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
       });
-
-      if(!response.ok) {
-        throw new Error('HTTP error! status: ${response.status}');
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.detail || "Invalid code");
       }
-
-      const responseData = await response.json();
-      console.log('Success: ', responseData);
-      
-      verify_login()
-
-    } catch (error) {
-      console.error('Error: ', error)
-      toast.error("Invalid username or password");
-
+      const data = await response.json();
+      persistTokenAndGoHome(data.access_token);
+    } catch (err: any) {
+      toast.error(err.message || "Verification failed");
     } finally {
       setIsLoading(false);
     }
+  }
 
+  async function resendCode() {
+    if (!email) return;
+    try {
+      const response = await fetch(apiUrl("/auth/register/resend"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.detail || "Could not resend code");
+      }
+      toast.success("Code resent");
+    } catch (err: any) {
+      toast.error(err.message || "Could not resend code");
+    }
+  }
+
+  async function handleGoogleSuccess(credentialResponse: CredentialResponse) {
+    if (!credentialResponse.credential) {
+      toast.error("Google sign-in did not return a credential");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await fetch(apiUrl("/auth/google"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.detail || "Google sign-in failed");
+      }
+      const data = await response.json();
+      persistTokenAndGoHome(data.access_token);
+    } catch (err: any) {
+      toast.error(err.message || "Google sign-in failed");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
     <motion.div
       className="min-h-screen w-full bg-background flex flex-col"
-      initial={{ opacity: 0, y: 30 }} 
-      animate={{ opacity: 1, y: 0 }}      
-      exit={{ opacity: 0, y: -30 }}      
-      transition={{ duration: 0.2, ease: "easeInOut" }} 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -30 }}
+      transition={{ duration: 0.2, ease: "easeInOut" }}
     >
       <PageNav />
       <div className="flex w-full flex-1 items-center justify-center px-6 pb-12">
-        <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-xl border bg-card shadow-sm md:h-[500px] md:flex-row">
+        <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-xl border bg-card shadow-sm md:h-[560px] md:flex-row">
           <div className="relative hidden h-full flex-1 overflow-hidden md:block">
             <img
               src="/slideshow1.png"
@@ -149,60 +184,135 @@ export default function Signup() {
             </CardHeader>
 
             <CardContent>
-              <h2 className="text-xl font-bold">Create an Account</h2>
-              <p className="text-sm text-gray-400">
-                Sign up with your details below
-              </p>
+              {step === "details" ? (
+                <>
+                  <h2 className="text-xl font-bold">Create an Account</h2>
+                  <p className="text-sm text-gray-400">
+                    Sign up with your details below
+                  </p>
 
-              <form className="flex flex-col gap-4">
-                <div className="grid gap-2 mt-6">
-                  <div className="relative w-full">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <Input
-                      id="username"
-                      type="text"
-                      placeholder="Username"
-                      required
-                      className="w-full pl-10 pr-3 py-2"
-                      value= {username}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                  </div>
+                  <form className="flex flex-col gap-4">
+                    <div className="grid gap-2 mt-6">
+                      <div className="relative w-full">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Input
+                          id="username"
+                          type="text"
+                          placeholder="Username"
+                          required
+                          className="w-full pl-10 pr-3 py-2"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                        />
+                      </div>
 
-                  <div className="relative w-full">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Example@gmail.com"
-                      required
-                      className="w-full pl-10 pr-3 py-2"
-                      value= {email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
+                      <div className="relative w-full">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Example@gmail.com"
+                          required
+                          className="w-full pl-10 pr-3 py-2"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
+                      </div>
 
-                  <div className="relative w-full">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Password"
-                      required
-                      className="w-full pl-10 pr-3 py-2"
-                      value= {password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </form>
+                      <div className="relative w-full">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Input
+                          id="password"
+                          type="password"
+                          placeholder="Password (min 8 chars)"
+                          required
+                          className="w-full pl-10 pr-3 py-2"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold">Verify your email</h2>
+                  <p className="text-sm text-gray-400">
+                    We sent a 6-digit code to <span className="font-medium">{email}</span>.
+                    It expires in 10 minutes.
+                  </p>
+                  <form className="flex flex-col gap-4">
+                    <div className="grid gap-2 mt-6">
+                      <div className="relative w-full">
+                        <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Input
+                          id="code"
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          placeholder="123456"
+                          required
+                          className="w-full pl-10 pr-3 py-2 tracking-[6px] text-center"
+                          value={code}
+                          onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={resendCode}
+                      className="text-xs text-blue-600 underline self-start"
+                    >
+                      Didn't get it? Resend code
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStep("details")}
+                      className="text-xs text-gray-500 underline self-start"
+                    >
+                      Use a different email
+                    </button>
+                  </form>
+                </>
+              )}
             </CardContent>
 
             <CardFooter>
-              <div className="flex w-full flex-col gap-2">
-                <Button type="submit" className="w-full" onClick={register_account} disabled={isLoading}>
-                  Sign Up
-                </Button>
+              <div className="flex w-full flex-col gap-3">
+                {step === "details" ? (
+                  <>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      onClick={startRegister}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Sending code..." : "Sign Up"}
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <div className="h-px flex-1 bg-border" />
+                      <span className="text-xs text-gray-400">or</span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                    <div className="flex justify-center">
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={() => toast.error("Google sign-in failed")}
+                        useOneTap={false}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    onClick={verifyCode}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Verifying..." : "Verify & Create Account"}
+                  </Button>
+                )}
                 <div className="flex items-center justify-center gap-2">
                   <p className="text-xs text-gray-400">Already have an account?</p>
                   <Link
